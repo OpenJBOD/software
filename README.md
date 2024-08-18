@@ -39,8 +39,8 @@ Webpage templates are stored in the `templates/` and `gzstatic/` directories, th
 
 This software uses a bunch of cool projects that are making this all possible, they include:
 
-- [https://github.com/micropython/micropython](MicroPython)
-- [https://github.com/miguelgrinberg/microdot](Microdot)
-- [https://github.com/pfalcon/utemplate](utemplate)
-- [https://github.com/pure-css/pure/](Pure CSS)
-- [https://purecss.io/layouts/](Pure CSS Layout Examples)
+- [MicroPython](https://github.com/micropython/micropython)
+- [Microdot](https://github.com/miguelgrinberg/microdot)
+- [utemplate](https://github.com/pfalcon/utemplate)
+- [Pure CSS](https://github.com/pure-css/pure/)
+- [Pure CSS Layout Examples](https://purecss.io/layouts/)
