@@ -1,0 +1,135 @@
+{% args config %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A layout example with a side menu that hides on mobile, just like the Pure website.">
+    <title>OpenJBOD - Network</title>
+    <link rel="stylesheet" href="/static/pure-min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div id="layout">
+    <!-- Menu toggle -->
+    <a href="#menu" id="menuLink" class="menu-link">
+        <!-- Hamburger icon -->
+        <span></span>
+    </a>
+
+    <div id="menu">
+        <div class="pure-menu">
+            <p class="pure-menu-heading" href="#company">OpenJBOD</p>
+
+            <ul class="pure-menu-list">
+              <li class="pure-menu-item"><a href="/" class="pure-menu-link">Overview</a></li>
+              <li class="pure-menu-item"><a href="/about" class="pure-menu-link">About</a></li>
+              <p class="pure-menu-heading">Settings</p>
+              <li class="pure-menu-item"><a href="/settings/network" class="pure-menu-link">Network</a></li>
+              <li class="pure-menu-item"><a href="/settings/power" class="pure-menu-link">Power</a></li>
+              <li class="pure-menu-item"><a href="/settings/environment" class="pure-menu-link">Environment</a></li>
+              <li class="pure-menu-item"><a href="/settings/tls" class="pure-menu-link">> SSL/TLS</a></li>
+              <li class="pure-menu-item"><a href="/settings/users" class="pure-menu-link">Users</a></li>
+              <li class="pure-menu-item"><a href="/settings/reset" class="pure-menu-link">Reset</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="main">
+      <div class="pure-u-1 content">
+        <div class="pure-u-1-3">
+          <h1 class="content-subhead">SSL/TLS</h1>
+          <fieldset>
+            <form class="pure-form pure-form-aligned" action="" method="POST">
+              <div class="pure-control-group">
+                <label for="use_tls" >Use SSL/TLS</label>
+                <input name="use_tls" id="use_tls" type=checkbox {% if config['web']['use_tls'] %}checked{% endif %} value=True>
+              </div>
+              <button class="pure-button pure-button-primary"type=submit>Save</button>
+              <p><b>Note:</b> After saving the settings, the device will need to restart to apply them. The board can be restarted on the <a href="/settings/reset">Reset page</a>.</p>
+            </form>
+            <form id="cert_form">
+              <div class="pure-control-group">
+                <div class="pure-g">
+                  <div class="pure-u-1-4">
+                    <label for="cert_file">Certificate</label>
+                  </div>
+                  <div class="pure-u-2-4">
+                    <input type="file" id="cert_file" name="cert" />
+                  </div>
+                  <div class="pure-u-1-4">
+                    <button class="pure-button pure-button-primary" type="submit">Upload</button>
+                  </div>
+                </div>
+              </div>
+            </form>
+            <form id="key_form">
+              <div class="pure-control-group">
+                <div class="pure-g">
+                  <div class="pure-u-1-4">
+                    <label for="key_file">Key</label>
+                  </div>
+                  <div class="pure-u-2-4">
+                    <input type="file" id="key_file" name="key" />
+                  </div>
+                  <div class="pure-u-1-4">
+                    <button class="pure-button pure-button-primary" type="submit">Upload</button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </fieldset>
+        </div>
+        <div class="pure-u-1-3">
+          <h1 class="content-subhead">Legend</h1>
+          <fieldset>
+            <p><b>At this time, SSL is more unstable than non-SSL</b> due to <a href="https://github.com/OpenJBOD/software/issues/1#issuecomment-2296061864">an exception</a>. It will work, but you may experience occasional ECONNRESET errors.</p>
+            <p><b>Use SSL/TLS</b> - This will start the webserver on port 443 with SSL/TLS enabled. If a valid certificate/certificate chain cannot be loaded, the webserver will revert to non-SSL on port 80.</p>
+            <p><b>Certificate</b> - This must be a DER-formatted, Elliptic-curve certificate file.</p>
+            <p><b>Key</b> - This must be a DER-formatted, Elliptic-curve key file.</p>
+            <p>You can generate a self-signed certificate using OpenSSL and the following commands:</p>
+            <pre>openssl ecparam -name prime256v1 -genkey -noout -out key.der -outform DER</pre>
+            <pre>openssl req -new -x509 -key key.der -out cert.der -outform DER -days 365 -nodes</pre>
+          </fieldset>
+        </div>
+      </div>
+    </div>
+</div>
+<script>
+  async function upload(ev) {
+    ev.preventDefault();
+    const cert_file = document.getElementById('cert_file').files[0];
+    const key_file = document.getElementById('key_file').files[0];
+    if(!cert_file && !key_file) {
+      alert("No files provided!")
+      return;
+    }
+    if(cert_file) {
+      url = "/upload/cert"
+      file = cert_file
+      form = document.getElementById('cert_form')
+    } else if(key_file) {
+      url = "/upload/key"
+      file = key_file
+      form = document.getElementById('key_form')
+    }
+
+    await fetch(url, {
+      method: 'POST',
+      body: file,
+      headers: {
+        'Content-Type': 'application/octet-stream',
+        'Content-Disposition': `attachment; filename="${file.name}"`,
+      },
+    }).then(res => {
+      console.log("File upload accepted!");
+      alert("File uploaded successfully!");
+      form.reset();
+    });
+  }
+  document.getElementById('cert_form').addEventListener('submit', upload);
+  document.getElementById('key_form').addEventListener('submit', upload);
+</script>
+</body>
+</html>

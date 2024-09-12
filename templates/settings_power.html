@@ -1,0 +1,85 @@
+{% args config %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A layout example with a side menu that hides on mobile, just like the Pure website.">
+    <title>OpenJBOD - Network</title>
+    <link rel="stylesheet" href="/static/pure-min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div id="layout">
+    <!-- Menu toggle -->
+    <a href="#menu" id="menuLink" class="menu-link">
+        <!-- Hamburger icon -->
+        <span></span>
+    </a>
+
+    <div id="menu">
+        <div class="pure-menu">
+            <p class="pure-menu-heading" href="#company">OpenJBOD</p>
+
+            <ul class="pure-menu-list">
+              <li class="pure-menu-item"><a href="/" class="pure-menu-link">Overview</a></li>
+              <li class="pure-menu-item"><a href="/about" class="pure-menu-link">About</a></li>
+              <p class="pure-menu-heading">Settings</p>
+              <li class="pure-menu-item"><a href="/settings/network" class="pure-menu-link">Network</a></li>
+              <li class="pure-menu-item"><a href="/settings/power" class="pure-menu-link">> Power</a></li>
+              <li class="pure-menu-item"><a href="/settings/environment" class="pure-menu-link">Environment</a></li>
+              <li class="pure-menu-item"><a href="/settings/tls" class="pure-menu-link">SSL/TLS</a></li>
+              <li class="pure-menu-item"><a href="/settings/users" class="pure-menu-link">Users</a></li>
+              <li class="pure-menu-item"><a href="/settings/reset" class="pure-menu-link">Reset</a></li>
+          </ul>
+        </div>
+    </div>
+
+    <div id="main">
+      <div class="pure-u-1 content">
+        <div class="pure-u-1-3">
+          <h1 class="content-subhead">Networking</h1>
+          <fieldset>
+            <form class="pure-form pure-form-aligned" action="" method="POST">
+              <div class="pure-control-group">
+                <label for="ignore_power_switch" class=pure-checkbox>Ignore Power Switch</label>
+                <input name="ignore_power_switch" id="ignore_power_switch" type=checkbox {% if config['power']['ignore_power_switch'] %}checked{% endif %} value=True>
+              </div>
+              <div class="pure-control-group">
+                <label for="on_boot" class=pure-checkbox>Turn on ATX on Boot</label>
+                <input name="on_boot" id="on_boot" type=checkbox {% if config['power']['on_boot'] %}checked{% endif %} value=True>
+              </div>
+              <div class="pure-control-group">
+                <label for="on_boot_delay">Boot Delay</label>
+                <input placeholder="Boot Delay (Seconds)" name="on_boot_delay" id="on_boot_delay" type="number" value="{{ config['power']['on_boot_delay'] }}">
+              </div>
+              <div class="pure-control-group">
+                <label for="follow_usb" class=pure-checkbox>Follow USB Power</label>
+                <input name="follow_usb" id="follow_usb" type=checkbox {% if config['power']['follow_usb'] %}checked{% endif %} value=True>
+              </div>
+              <div class="pure-control-group">
+                <label for="follow_usb_delay">Follow Delay</label>
+                <input placeholder="Follow Delay (Seconds)" name="follow_usb_delay" id="follow_usb_delay" type="number" value="{{ config['power']['follow_usb_delay'] }}">
+              </div>
+              <button class="pure-button pure-button-primary"type=submit>Save</button>
+              <p><b>Note:</b> After saving the settings, the device will need to restart to apply them. The board can be restarted on the <a href="/settings/reset">Reset page</a>.</p>
+            </form>
+          </fieldset>
+        </div>
+        <div class="pure-u-1-3">
+          <h1 class="content-subhead">Legend</h1>
+          <fieldset>
+            <p><b>Ignore Power Switch</b> - This causes the controller to ignore the power button input.</p>
+            <p><b>Turn on ATX on Boot</b> - The controller will start the power supply as part of the boot process. This is mutually exclusive with <b>Follow USB Power</b></b></p>
+            <p><b>Boot Delay</b> - This is a timer in seconds that will elapse before the power supply is turned on.</p>
+            <p><b>Follow USB Power</b> - The controller will start and stop the ATX power supply when it receives or stops receiving voltage from the microUSB port. This is mutually exclusive with <b>Turn on ATX on Boot</b></p>
+            <p><b>Boot Delay</b> - This is a timer in seconds that will elapse before the power supply is turned on.</p>
+          </fieldset>
+        </div>
+      </div>
+    </div>
+</div>
+
+</body>
+</html>

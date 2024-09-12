@@ -1,0 +1,95 @@
+{% args config %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A layout example with a side menu that hides on mobile, just like the Pure website.">
+    <title>OpenJBOD - Network</title>
+    <link rel="stylesheet" href="/static/pure-min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>.pure-form-aligned .pure-control-group label{width:5em;}</style>
+</head>
+<body>
+
+<div id="layout">
+    <!-- Menu toggle -->
+    <a href="#menu" id="menuLink" class="menu-link">
+        <!-- Hamburger icon -->
+        <span></span>
+    </a>
+
+    <div id="menu">
+        <div class="pure-menu">
+            <p class="pure-menu-heading" href="#company">OpenJBOD</p>
+
+            <ul class="pure-menu-list">
+              <li class="pure-menu-item"><a href="/" class="pure-menu-link">Overview</a></li>
+              <li class="pure-menu-item"><a href="/about" class="pure-menu-link">About</a></li>
+              <p class="pure-menu-heading">Settings</p>
+              <li class="pure-menu-item"><a href="/settings/network" class="pure-menu-link">> Network</a></li>
+              <li class="pure-menu-item"><a href="/settings/power" class="pure-menu-link">Power</a></li>
+              <li class="pure-menu-item"><a href="/settings/environment" class="pure-menu-link">Environment</a></li>
+              <li class="pure-menu-item"><a href="/settings/tls" class="pure-menu-link">SSL/TLS</a></li>
+              <li class="pure-menu-item"><a href="/settings/users" class="pure-menu-link">Users</a></li>
+              <li class="pure-menu-item"><a href="/settings/reset" class="pure-menu-link">Reset</a></li>
+          </ul>
+        </div>
+    </div>
+
+    <div id="main">
+      <div class="pure-u-1 content">
+        <div class="pure-u-1-3">
+          <h1 class="content-subhead">Networking</h1>
+          <fieldset>
+            <form class="pure-form pure-form-aligned" action="" method="POST">
+              <div class="pure-control-group">
+                <label for=hostname>Hostname:</label>
+                <input placeholder=Hostname id=hostname name=hostname value="{{ config['network']['hostname'] }}" />
+              </div>
+              <div class="pure-control-group">
+                <label for=ip_dhcp class=pure-radio>
+                  <input id=ip_dhcp type=radio value=dhcp name=ip_method {% if config['network']['method'] == 'dhcp' %}checked{% endif %}> DHCP
+                </label>
+                <label for=ip_static class=pure-radio>
+                  <input id=ip_static type=radio value=static name=ip_method {% if config['network']['method'] == 'static' %}checked{% endif %}> Static
+                </label>
+              </div>
+              <div class="pure-control-group">
+                <label for=ip_address>IP Address</label>
+                <input placeholder="IP Address"id=ip_address name=ip_address value="{{ config['network']['ip'] }}">
+              </div>
+              <div class="pure-control-group">
+                <label for=subnet_mask>Subnet Mask</label>
+                <input placeholder="Subnet Mask" id="subnet_mask" name="subnet_mask" value="{{ config['network']['subnet_mask'] }}">
+              </div>
+              <div class="pure-control-group">
+                <label for="gateway_ip">Gateway</label>
+                <input placeholder="Gateway IP" name="gateway_ip" value="{{ config['network']['gateway'] }}">
+              </div>
+              <div class="pure-control-group">
+                <label for="dns_ip">DNS</label>
+                <input placeholder="DNS Server" id="dns_ip" name="dns_ip" value="{{ config['network']['dns'] }}">
+              </div>
+              <button class="pure-button pure-button-primary"type=submit>Save</button>
+              <p><b>Note:</b> After saving the settings, the device will need to restart to apply them. The board can be restarted on the <a href="/settings/reset">Reset page</a>.</p>
+            </form>
+          </fieldset>
+        </div>
+        <div class="pure-u-1-3">
+          <h1 class="content-subhead">Legend</h1>
+          <fieldset>
+            <p><b>Hostname</b> - This option currently has no effect. <a href="https://github.com/OpenJBOD/software/issues/2">Please see this issue</a>.</p>
+            <p><b>IP Method</b> - Decides whether to use DHCP or static IP addressing. Addresses input while the controller is in DHCP mode will still be saved, but not used.</p>
+            <p><b>IP Address</b> - IPv4 Address of the device, only used with the static option above.</p>
+            <p><b>Subnet Mask</b> - IPv4 subnet mask of the device, only used with the static option above.</p>
+            <p><b>Gateway</b> - IPv4 gateway of the device, only used with the static option above.</p>
+            <p><b>DNS</b> - IPv4 DNS IP for the device, only used with the static option above.</p>
+          </fieldset>
+        </div>
+      </div>
+    </div>
+</div>
+
+</body>
+</html>

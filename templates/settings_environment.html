@@ -1,0 +1,116 @@
+{% args config %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A layout example with a side menu that hides on mobile, just like the Pure website.">
+    <title>OpenJBOD - Network</title>
+    <link rel="stylesheet" href="/static/pure-min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div id="layout">
+    <!-- Menu toggle -->
+    <a href="#menu" id="menuLink" class="menu-link">
+        <!-- Hamburger icon -->
+        <span></span>
+    </a>
+
+    <div id="menu">
+        <div class="pure-menu">
+            <p class="pure-menu-heading" href="#company">OpenJBOD</p>
+
+            <ul class="pure-menu-list">
+              <li class="pure-menu-item"><a href="/" class="pure-menu-link">Overview</a></li>
+              <li class="pure-menu-item"><a href="/about" class="pure-menu-link">About</a></li>
+              <p class="pure-menu-heading">Settings</p>
+              <li class="pure-menu-item"><a href="/settings/network" class="pure-menu-link">Network</a></li>
+              <li class="pure-menu-item"><a href="/settings/power" class="pure-menu-link">Power</a></li>
+              <li class="pure-menu-item"><a href="/settings/environment" class="pure-menu-link">> Environment</a></li>
+              <li class="pure-menu-item"><a href="/settings/tls" class="pure-menu-link">SSL/TLS</a></li>
+              <li class="pure-menu-item"><a href="/settings/users" class="pure-menu-link">Users</a></li>
+              <li class="pure-menu-item"><a href="/settings/reset" class="pure-menu-link">Reset</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="main">
+      <div class="pure-u-1 content">
+        <div class="pure-u-1-3">
+          <h1 class="content-subhead">Environment</h1>
+          <fieldset>
+            <form class="pure-form pure-form-aligned" action="" method="POST">
+              <div class="pure-control-group">
+                <label for="use_ext_probe" >Use External Probe</label>
+                <input name="use_ext_probe" id="use_ext_probe" type=checkbox {% if config['monitoring']['use_ext_probe'] %}checked{% endif %} value=True>
+              </div>
+              <div class="pure-control-group">
+                <label for="ignore_fan_fail" class=pure-checkbox>Ignore Fan Failures</label>
+                <input name="ignore_fan_fail" id="ignore_fan_fail" type=checkbox {% if config['monitoring']['ignore_fan_fail'] %}checked{% endif %} value=True>
+              </div>
+              <div class="pure-control-group">
+                <label for="curve_1_c">Fan Curve Step 1</label>
+                <div class="pure-u-1-4">
+                  <input placeholder="Temp 1 (C)" class="pure-input-1" name="curve_1_c" value="{{ config['fan_curve']['1']['temp'] }}">
+                </div>
+                <div class="pure-u-1-4">
+                  <input placeholder="Fan Percent"class="pure-input-1" name="curve_1_p" value="{{ config['fan_curve']['1']['fan_p'] }}">
+                </div>
+              </div>
+              <div class="pure-control-group">
+                <label for="curve_2_c">Fan Curve Step 2</label>
+                <div class="pure-u-1-4">
+                  <input placeholder="Temp 2 (C)" class="pure-input-1" name="curve_2_c" value="{{ config['fan_curve']['2']['temp'] }}">
+                </div>
+                <div class="pure-u-1-4">
+                  <input placeholder="Fan Percent"class="pure-input-1" name="curve_2_p" value="{{ config['fan_curve']['2']['fan_p'] }}">
+                </div>
+              </div>
+              <div class="pure-control-group">
+                <label for="curve_3_c">Fan Curve Step 3</label>
+                <div class="pure-u-1-4">
+                  <input placeholder="Temp 3 (C)" class="pure-input-1" name="curve_3_c" value="{{ config['fan_curve']['3']['temp'] }}">
+                </div>
+                <div class="pure-u-1-4">
+                  <input placeholder="Fan Percent"class="pure-input-1" name="curve_3_p" value="{{ config['fan_curve']['3']['fan_p'] }}">
+                </div>
+              </div>
+              <div class="pure-control-group">
+                <label for="curve_4_c">Fan Curve Step 4</label>
+                <div class="pure-u-1-4">
+                  <input placeholder="Temp 4 (C)" class="pure-input-1" name="curve_4_c" value="{{ config['fan_curve']['4']['temp'] }}">
+                </div>
+                <div class="pure-u-1-4">
+                  <input placeholder="Fan Percent"class="pure-input-1" name="curve_4_p" value="{{ config['fan_curve']['4']['fan_p'] }}">
+                </div>
+              </div>
+              <div class="pure-control-group">
+                <label for="curve_5_c">Fan Curve Step 5</label>
+                <div class="pure-u-1-4">
+                  <input placeholder="Temp 5 (C)" class="pure-input-1" name="curve_5_c" value="{{ config['fan_curve']['5']['temp'] }}">
+                </div>
+                <div class="pure-u-1-4">
+                  <input placeholder="Fan Percent"class="pure-input-1" name="curve_5_p" value="{{ config['fan_curve']['5']['fan_p'] }}">
+                </div>
+              </div>
+              <button class="pure-button pure-button-primary"type=submit>Save</button>
+              <p><b>Note:</b> After saving the settings, the device will need to restart to apply them. The board can be restarted on the <a href="/settings/reset">Reset page</a>.</p>
+            </form>
+          </fieldset>
+        </div>
+        <div class="pure-u-1-3">
+          <h1 class="content-subhead">Legend</h1>
+          <fieldset>
+            <p><b>Use External Probe</b> - Setting this checkbox will cause the software to use the external probe attached to the J9 header.</p>
+            <p><b>Ignore Fan Failures</b> - Currently unimplemented, see <a href="https://github.com/OpenJBOD/software/issues/3">this issue</a>.</p>
+            <p><b>Fan Curve</b> - There are five built-in steps into this software's fan curve. When the temperature reading reaches the threshold in one of the steps, the current fan speed will be adjusted to the defined percentage for that step.</b></p>
+          </fieldset>
+        </div>
+      </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,2 +1,113 @@
 {% args resp %}
-<title>OpenJBOD</title><link href=/static/main.css rel=stylesheet><div class=pure-g id=layout><div class="pure-u-1 pure-u-md-1-4 sidebar"><div class=header><h1 class=brand-title>OpenJBOD</h1><h2 class=brand-tagline>An open source storage power controller</h2><nav class=nav><ul class=nav-list><li class=nav-item><a class=pure-button href=/ >Overview</a><li class=nav-item><a class=pure-button href=/settings>Settings</a><li class=nav-item><a class=pure-button href=/about>About</a></ul></nav><nav class=nav><ul class=nav-list><li class=nav-item><a class=pure-button href=https://github.com/OpenJBOD>GitHub</a></ul></nav></div></div><div class="pure-u-1 content pure-u-md-3-4"><h1 class=content-subhead>Overview</h1><div class=pure-g><div class=pure-u-1-3><b>Power Supply</b>{% if resp['atx_state'] %}<p>State: On{% else %}<p>State: Off{% endif %}</p><a class="pure-button pure-button-primary"href=/power_toggle>Turn On/Off</a></div><div class=pure-u-1-3><b>Environment Info</b><p>Fan RPM: {{ resp['fan_rpm'] }}<p>Target Fan Speed: {{ resp['duty_cycle'] }}%<p>Temperature: {{ resp['temp'] }}</div><div class=pure-u-1-3><b>Serial Number</b><p>{{ resp['serial'] }}</div></div><hr><div class=pure-g><div class=pure-u-1-3><b>Network Status</b><table class="pure-table pure-table-horizontal"><tr><th>Hostname<td>{{ resp['config']['network']['hostname'] }}<tr><th>IP Config Method<td>{{ resp['config']['network']['method'] }}<tr><th>IP Address<td>{{ resp['net_info']['ip_addr'] }}<tr><th>Subnet Mask<td>{{ resp['net_info']['subnet_mask'] }}<tr><th>Gateway<td>{{ resp['net_info']['gateway_ip'] }}<tr><th>DNS Server<td>{{ resp['net_info']['dns_ip'] }}<tr><th>MAC Address<td>{{ resp['mac_addr'] }}</table></div><div class=pure-u-1-3><b>Power Settings</b><p>On Boot: {{ resp['config']['power']['on_boot'] }}<p>On Boot Delay: {{ resp['config']['power']['on_boot_delay'] }}<p>Follow USB: {{ resp['config']['power']['follow_usb'] }}<p>Follow USB Delay: {{ resp['config']['power']['follow_usb_delay'] }}<p>Ignore Power Switch: {{ resp['config']['power']['ignore_power_switch'] }}</div><div class=pure-u-1-3><b>Notes</b><br><form action=/note method=post><textarea class=pure-u-3-4 name="notes" rows=10>{{ resp['config']['notes'] }}</textarea><br /><button class="pure-button pure-button-primary" type=submit>Save Note</button></form></div></div></div></div>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A layout example with a side menu that hides on mobile, just like the Pure website.">
+    <title>OpenJBOD</title>
+    <link rel="stylesheet" href="/static/pure-min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div id="layout">
+    <!-- Menu toggle -->
+    <a href="#menu" id="menuLink" class="menu-link">
+        <!-- Hamburger icon -->
+        <span></span>
+    </a>
+
+    <div id="menu">
+        <div class="pure-menu">
+            <p class="pure-menu-heading">OpenJBOD</p>
+
+            <ul class="pure-menu-list">
+              <li class="pure-menu-item"><a href="/" class="pure-menu-link">> Overview</a></li>
+              <li class="pure-menu-item"><a href="/about" class="pure-menu-link">About</a></li>
+              <p class="pure-menu-heading">Settings</p>
+              <li class="pure-menu-item"><a href="/settings/network" class="pure-menu-link">Network</a></li>
+              <li class="pure-menu-item"><a href="/settings/power" class="pure-menu-link">Power</a></li>
+              <li class="pure-menu-item"><a href="/settings/environment" class="pure-menu-link">Environment</a></li>
+              <li class="pure-menu-item"><a href="/settings/tls" class="pure-menu-link">SSL/TLS</a></li>
+              <li class="pure-menu-item"><a href="/settings/users" class="pure-menu-link">Users</a></li>
+              <li class="pure-menu-item"><a href="/settings/reset" class="pure-menu-link">Reset</a></li>
+          </ul>
+        </div>
+    </div>
+
+    <div id="main">
+      <div class="pure-u-1 content">
+        <h1 class="content-subhead">Overview</h1>
+        <div class="pure-g">
+          <div class="pure-u-1-3">
+            <h1 class="content-subhead">Power Supply</h1>
+            <p><b>State:</b> {% if resp['atx_state'] %}On{% else %}Off{% endif %}</p>
+            <a class="pure-button pure-button-primary" href="/power_toggle">Turn On/Off</a>
+          </div>
+          <div class=pure-u-1-3>
+            <h1 class=content-subhead>Environment Info</h1>
+            <p><b>Fan RPM:</b> {{ resp['fan_rpm'] }}</p>
+            <p><b>Fan Speed:</b> {{ resp['fan_speed_p'] }}%</p>
+            <p><b>Temperature:</b> {{ resp['temp'] }} C</p>
+          </div>
+          <div class="pure-u-1-3">
+            <h1 class="content-subhead">Board Info</h1>
+            <p><b>Serial Number:</b> {{ resp['serial'] }}</p>
+            <p><b>Software Version:</b> {{ resp['version'] }}</p>
+            <p><b>MAC Address:</b> {{ resp['mac_addr'] }}</p>
+          </div>
+        </div>
+        <div class="pure-g">
+          <div class="pure-u-1-3">
+            <h1 class="content-subhead">Network Info</h1>
+            <table class="pure-table pure-table-horizontal">
+              <tr>
+                <th>Hostname</th>
+                <td>{{ resp['config']['network']['hostname'] }}</td>
+              </tr>
+              <tr>
+                <th>IP Config Method</th>
+                <td>{{ resp['config']['network']['method'] }}</td>
+              </tr>
+              <tr>
+                <th>IP Address</th>
+                <td>{{ resp['net_info']['ip_addr'] }}</td>
+              </tr>
+              <tr>
+                <th>Subnet Mask</th>
+                <td>{{ resp['net_info']['subnet_mask'] }}</td>
+              </tr>
+              <tr>
+                <th>Gateway</th>
+                <td>{{ resp['net_info']['gateway_ip'] }}</td>
+              </tr>
+              <tr>
+                <th>DNS Server</th>
+                <td>{{ resp['net_info']['dns_ip'] }}</td>
+              </tr>
+            </table>
+          </div>
+          <div class="pure-u-1-3">
+            <h1 class="content-subhead">Power Settings</h1>
+            <p><b>On Boot:</b> {{ resp['config']['power']['on_boot'] }}</p>
+            <p><b>On Boot Delay:</b> {{ resp['config']['power']['on_boot_delay'] }}</p>
+            <p><b>Follow USB:</b> {{ resp['config']['power']['follow_usb'] }}</p>
+            <p><b>Follow USB Delay:</b> {{ resp['config']['power']['follow_usb_delay'] }}</p>
+            <p><b>Ignore Power Switch:</b> {{ resp['config']['power']['ignore_power_switch'] }}</p>
+          </div>
+          <div class="pure-u-1-3">
+            <h1 class="content-subhead">Notes</h1>
+            <form action=/note method=post>
+              <textarea class=pure-u-3-4 name="notes" rows=10>{{ resp['config']['notes'] }}</textarea>
+              <br />
+              <button class="pure-button pure-button-primary mt10" type=submit>Save Note</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+</body>
+</html>

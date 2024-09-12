@@ -1,1 +1,105 @@
-<title>OpenJBOD - About</title><link href=/static/main.css rel=stylesheet><div class=pure-g id=layout><div class="pure-u-1 pure-u-md-1-4 sidebar"><div class=header><h1 class=brand-title>OpenJBOD</h1><h2 class=brand-tagline>An open source storage power controller</h2><nav class=nav><ul class=nav-list><li class=nav-item><a href=/ class=pure-button>Overview</a><li class=nav-item><a href=/settings class=pure-button>Settings</a><li class=nav-item><a href=/about class=pure-button>About</a></ul></nav><nav class=nav><ul class=nav-list><li class=nav-item><a href=https://github.com/OpenJBOD class=pure-button>GitHub</a></ul></nav></div></div><div class="pure-u-1 content pure-u-md-3-4"><h1 class=content-subhead>About OpenJBOD</h1><p><a href="https://github.com/OpenJBOD">OpenJBOD</a> is an open source hardware and software project by <a href=http://github.com/TheGuyDanish target=_blank>TheGuyDanish (GitHub)</a>.<p>The OpenJBOD Controller hardware is open source and licensed under the <a href=https://choosealicense.com/licenses/cern-ohl-p-2.0/ target=_blank>CERN OHL v2 - Permissive</a> license.<p>The OpenJBOD Controller software is open source and licensed under the <a href=https://choosealicense.com/licenses/mit/ target=_blank>MIT license</a>.<div class=pure-g><div class=pure-u-1-3><h1 class=content-subhead>Third party licenses</h1><p>OpenJBOD uses the following libraries:<table class="pure-table pure-table-horizontal"><thead><th>Project<th>License</thead><tr><td><a href=https://github.com/micropython/micropython>MicroPython</a><td>MIT<tr><td><a href=https://github.com/miguelgrinberg/microdot>Microdot</a><td>MIT<tr><td><a href=https://github.com/pfalcon/utemplate>utemplate</a><td>MIT<tr><td><a href=https://github.com/pure-css/pure/ >Pure CSS</a><td>BSD<tr><td><a href=https://purecss.io/layouts/ >Blog Layout Example</a><td>zlib</table></div><div class=pure-u-1-3><h1 class=content-subhead>Special mentions and acknowledgements</h1><p>The OpenJBOD project is made possible by the tireless efforts of many people, projects and communities, including but not limited to:<ul><li><a href=https://www.kicad.org/ target=_blank>KiCad</a><li><a href=https://www.raspberrypi.org/ target=_blank>The Raspberry Pi Foundation</a><li><a href=https://github.com/orgs/micropython/discussions target=_blank>The MicroPython Community</a><li><a href=https://www.youtube.com/@PhilsLab target=_blank>Phil's Lab (YouTube)</a><li><a href=https://reddit.com/r/homelab target=_blank>The Reddit r/homelab Community and Discord</a></ul></div></div></div></div>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A layout example with a side menu that hides on mobile, just like the Pure website.">
+    <title>OpenJBOD - About</title>
+    <link rel="stylesheet" href="/static/pure-min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div id="layout">
+    <!-- Menu toggle -->
+    <a href="#menu" id="menuLink" class="menu-link">
+        <!-- Hamburger icon -->
+        <span></span>
+    </a>
+
+    <div id="menu">
+        <div class="pure-menu">
+            <p class="pure-menu-heading">OpenJBOD</p>
+
+            <ul class="pure-menu-list">
+              <li class="pure-menu-item"><a href="/" class="pure-menu-link">Overview</a></li>
+	      <li class="pure-menu-item"><a href="/about" class="pure-menu-link">> About</a></li>
+              <p class="pure-menu-heading">Settings</p>
+              <li class="pure-menu-item"><a href="/settings/network" class="pure-menu-link">Network</a></li>
+              <li class="pure-menu-item"><a href="/settings/power" class="pure-menu-link">Power</a></li>
+              <li class="pure-menu-item"><a href="/settings/environment" class="pure-menu-link">Environment</a></li>
+              <li class="pure-menu-item"><a href="/settings/tls" class="pure-menu-link">SSL/TLS</a></li>
+              <li class="pure-menu-item"><a href="/settings/users" class="pure-menu-link">Users</a></li>
+              <li class="pure-menu-item"><a href="/settings/reset" class="pure-menu-link">Reset</a></li>
+          </ul>
+        </div>
+    </div>
+
+    <div id="main">
+      <div class="pure-u-1 content">
+        <h1 class="content-subhead">About OpenJBOD</h1>
+        <p><a href="https://github.com/OpenJBOD">OpenJBOD</a> is an open source hardware and software project by <a href=http://github.com/TheGuyDanish target=_blank>TheGuyDanish (GitHub)</a>.</p>
+        <p>The OpenJBOD Controller hardware is open source and licensed under the <a href=https://choosealicense.com/licenses/cern-ohl-p-2.0/ target=_blank>CERN OHL v2 - Permissive</a> license.</p>
+        <p>The OpenJBOD Controller software is open source and licensed under the <a href=https://choosealicense.com/licenses/mit/ target=_blank>MIT license</a>.</p>
+        <div class="pure-g">
+          <div class="pure-u-1-3">
+            <h1 class="content-subhead">Third party licenses</h1>
+            <p>OpenJBOD uses the following libraries:</p>
+            <table class="pure-table pure-table-horizontal">
+              <thead>
+                <th>Project</th>
+                <th>License</th>
+              </thead>
+              <tr>
+                <td><a href=https://github.com/micropython/micropython>MicroPython</a></td>
+                <td>MIT</td>
+              </tr>
+              <tr>
+                <td><a href=https://github.com/miguelgrinberg/microdot>Microdot</a></td>
+                <td>MIT</td>
+              </tr>
+              <tr>
+                <td><a href=https://github.com/pfalcon/utemplate>utemplate</a></td>
+                <td>MIT</td>
+              </tr>
+              <tr>
+                <td><a href=https://github.com/pure-css/pure/ >Pure CSS</a></td>
+                <td>BSD</td>
+              </tr>
+              <tr>
+                <td><a href=https://purecss.io/layouts/>Pure CSS Layout Examples</a></td>
+                <td>zlib</td>
+              </tr>
+            </table>
+          </div>
+          <div class=pure-u-1-3>
+            <h1 class=content-subhead>Special mentions and acknowledgements</h1>
+            <p>The OpenJBOD project is made possible by the tireless efforts of many people, projects and communities, including but not limited to:</p>
+            <ul>
+			        <li>
+			          <a href="https://opencollective.com/riffcc" target=_blank>Riff.CC</a>
+			        </li>
+              <li>
+                <a href=https://www.kicad.org/ target=_blank>KiCad</a>
+              </li>
+              <li>
+                <a href=https://www.raspberrypi.org/ target=_blank>The Raspberry Pi Foundation</a>
+              </li>
+              <li>
+                <a href=https://github.com/orgs/micropython/discussions target=_blank>The MicroPython Community</a>
+              </li>
+              <li>
+                <a href=https://www.youtube.com/@PhilsLab target=_blank>Phil's Lab (YouTube)</a>
+              </li>
+              <li>
+                <a href=https://reddit.com/r/homelab target=_blank>The Reddit r/homelab Community and Discord</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+</body>
+</html>

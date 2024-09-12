@@ -1,0 +1,100 @@
+{% args config %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A layout example with a side menu that hides on mobile, just like the Pure website.">
+    <title>OpenJBOD - Users</title>
+    <link rel="stylesheet" href="/static/pure-min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>.pure-table td, .pure-table th{text-align:center;vertical-align:middle;}.pure-button-primary{margin-top:10px;}.pure-form-aligned .pure-control-group label{width:unset;}</style>
+</head>
+<body>
+
+<div id="layout">
+    <!-- Menu toggle -->
+    <a href="#menu" id="menuLink" class="menu-link">
+        <!-- Hamburger icon -->
+        <span></span>
+    </a>
+
+    <div id="menu">
+        <div class="pure-menu">
+            <p class="pure-menu-heading" href="#company">OpenJBOD</p>
+
+            <ul class="pure-menu-list">
+              <li class="pure-menu-item"><a href="/" class="pure-menu-link">Overview</a></li>
+              <li class="pure-menu-item"><a href="/about" class="pure-menu-link">About</a></li>
+              <p class="pure-menu-heading">Settings</p>
+              <li class="pure-menu-item"><a href="/settings/network" class="pure-menu-link">Network</a></li>
+              <li class="pure-menu-item"><a href="/settings/power" class="pure-menu-link">Power</a></li>
+              <li class="pure-menu-item"><a href="/settings/environment" class="pure-menu-link">Environment</a></li>
+              <li class="pure-menu-item"><a href="/settings/tls" class="pure-menu-link">SSL/TLS</a></li>
+              <li class="pure-menu-item"><a href="/settings/users" class="pure-menu-link">> Users</a></li>
+              <li class="pure-menu-item"><a href="/settings/reset" class="pure-menu-link">Reset</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="main">
+      <div class="pure-u-1 content">
+        <div class="pure-u-1-3">
+          <h1 class="content-subhead">Users</h1>
+          <fieldset>
+            <form class="pure-form pure-form-aligned" action="" method="POST">
+              <table class="pure-table">
+                <thead>
+                  <tr>
+                    <th>User ID</th>
+                    <th>Username</th>
+                    <th>Change Password</th>
+                    <th>Password</th>
+                  </tr>
+                  <tr>
+                    <th>1</th>
+                    <td><input placeholder="Username" class="pure-input-1" name="user_1_n" value="{{ config['web']['users']['1']['username'] }}"></td>
+                    <td><input name="user_1_cp" id="user_1_cp" type=checkbox value=True onchange="document.getElementById('user_1_p').readOnly = !this.checked"></td>
+                    <td><input type="password" placeholder="Password" class="pure-input-1" id="user_1_p" name="user_1_p" readonly /></td>
+                  </tr>
+                  <tr>
+                    <th>2</th>
+                    <td><input placeholder="Username" class="pure-input-1" name="user_2_n" value="{{ config['web']['users']['2']['username'] }}"></td>
+                    <td><input name="user_2_cp" id="user_2_cp" type=checkbox value=True onchange="document.getElementById('user_2_p').readOnly = !this.checked"></td>
+                    <td><input type="password" placeholder="Password" class="pure-input-1" id="user_2_p" name="user_2_p" readonly /></td>
+                  </tr>
+                  <tr>
+                    <th>3</th>
+                    <td><input placeholder="Username" class="pure-input-1" name="user_3_n" value="{{ config['web']['users']['3']['username'] }}"></td>
+                    <td><input name="user_3_cp" id="user_3_cp" type=checkbox value=True onchange="document.getElementById('user_3_p').readOnly = !this.checked"></td>
+                    <td><input type="password" placeholder="Password" class="pure-input-1" id="user_3_p" name="user_3_p" readonly /></td>
+                  </tr>
+                  <tr>
+                    <th>4</th>
+                    <td><input placeholder="Username" class="pure-input-1" name="user_4_n" value="{{ config['web']['users']['4']['username'] }}"></td>
+                    <td><input name="user_4_cp" id="user_4_cp" type=checkbox value=True onchange="document.getElementById('user_4_p').readOnly = !this.checked"></td>
+                    <td><input type="password" placeholder="Password" class="pure-input-1" id="user_4_p" name="user_4_p" readonly /></td>
+                  </tr>
+                  <tr>
+                    <th>5</th>
+                    <td><input placeholder="Username" class="pure-input-1" name="user_5_n" value="{{ config['web']['users']['5']['username'] }}"></td>
+                    <td><input name="user_5_cp" id="user_5_cp" type=checkbox value=True onchange="document.getElementById('user_5_p').readOnly = !this.checked"></td>
+                    <td><input type="password" placeholder="Password" class="pure-input-1" id="user_5_p" name="user_5_p" readonly /></td>
+                  </tr>
+                </thead>
+              </table>
+              <button class="pure-button pure-button-primary"type=submit>Save</button>
+            </form>
+          </fieldset>
+        </div>
+        <div class="pure-u-1-3">
+          <h1 class="content-subhead">Legend</h1>
+          <fieldset>
+            <p><b>User Table</b> - Here you can change usernames and passwords. Passwords can only be changed with the 'Change Password' item checked. New users are created by setting a username and a password. Users may be deleted by clearing the username field. If you change the username of the user you are currently on, you will be forced to sign in again.</p>
+          </fieldset>
+        </div>
+      </div>
+    </div>
+</div>
+</body>
+</html>

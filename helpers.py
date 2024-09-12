@@ -5,8 +5,42 @@ import json
 import machine
 import time
 import binascii
+from hashlib import sha1
 
 CONFIG_FILE = "config.json"
+
+class SRLatch:
+  def __init__(self, set_pin: machine.Pin, reset_pin: machine.Pin, 
+               sense_pin: machine.Pin):
+    if (not isinstance(set_pin, machine.Pin) or 
+        not isinstance(reset_pin, machine.Pin) or 
+        not isinstance(sense_pin, machine.Pin)):
+        raise TypeError("All arguments must be machine.Pin instances.")
+    
+    self.set_pin = set_pin
+    self.reset_pin = reset_pin
+    self.sense_pin = sense_pin
+
+  def on(self):
+    self.reset_pin.off()
+    self.set_pin.on()
+    time.sleep_ms(250)
+    self.set_pin.off()
+    
+  def off(self):
+    self.set_pin.off()
+    self.reset_pin.on()
+    time.sleep_ms(250)
+    self.reset_pin.off()
+    
+  def state(self):
+    if self.sense_pin.value():
+      return True
+    else:
+      return False
+
+def create_hash(password):
+  return binascii.hexlify(sha1(password).digest()).decode("utf-8")
 
 def get_id():
   # Uses the flash attached to the RP2040 to derive a unique board ID.
@@ -35,20 +69,6 @@ def get_mac_address(spi, cs):
     
   return mac_str
 
-def psu_on(lset, lreset):
-  # Turn off the latch reset pin (it shouldn't be on anyway), then turn on the set pin briefly.
-  lreset.off()
-  lset.on()
-  time.sleep(0.2)
-  lset.off()
-
-def psu_off(lset, lreset):
-  # Opposite of psu_on()
-  lset.off()
-  lreset.on()
-  time.sleep(0.2)
-  lreset.off()
-
 def reset_rp2040():
   # Note, this is a hard reset. For soft resets, use sys.exit()
   machine.reset()
@@ -57,21 +77,22 @@ def get_rp2040_temp():
   conversion_factor = 3.3/(65535)
   reading = machine.ADC(4).read_u16() * conversion_factor
 
-  temp = round(27 - (reading - 0.706)/0.001721)
+  temp = 27 - (reading - 0.706)/0.001721
   return temp
 
 def get_ds18x20_temp(ds_sensor, rom):
   ds_sensor.convert_temp()
   time.sleep_ms(250)
   
-  return round(ds_sensor.read_temp(rom))
+  return ds_sensor.read_temp(rom)
 
 def check_temp(temp, fan_curve):
+  fan_speed = list(fan_curve.values())[0]['fan_p']
   for step in fan_curve.values():
     if temp >= step['temp']:
       fan_speed = step['fan_p']
     else:
-      fan_speed = fan_curve['1']['fan_p']
+      break
   return fan_speed
 
 def get_network_info(ifconfig):
