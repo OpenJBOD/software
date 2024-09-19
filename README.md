@@ -4,7 +4,9 @@ The OpenJBOD Software is a Python-based software package for managing an OpenJBO
 
 ## Requirements
 
-- MicroPython v1.23.0 or greater, compiled with W5500 support. (Ideally, also with 16 MB flash support, most versions only have 2MB support compiled into them.)
+- MicroPython v1.23.0 or greater, compiled with W5500 support. (Ideally, also with 16 MB flash support, most versions only have 2MB support compiled into them.
+> [!TIP]
+> A specific MicroPython binary file can be found by going to the [Actions section of openjbod/micropython](https://github.com/OpenJBOD/micropython/actions), where it can be downloaded by clicking the latest build and grabbing the `firmware.uf2` file from the artifacts.
 - An OpenJBOD RP2040 baseboard
 
 ## How to deploy
@@ -32,7 +34,7 @@ Important files are:
 - `emc2301/` - This directory contains the basic EMC2301 driver. This is the class we use to interface with the fan controller. `emc2301_regs.py` contains the register addresses of the EMC2301 for quick reference.
 
 Webpage templates are stored in the `templates/` and `gzstatic/` directories, these are unique because:
-- `gzstatic/` - Any request invoked to `/static/<path>` goes to the gzstatic directory. This is a good place to put gzipped static resources that will not change. Such as the about page, the CSS, images, etc. Please note that gzipped pages cannot be rendered as templates. **For the sake of ease of development, the files in gzstatic are NOT gzipped in this repo. Before pushing them to your board, ensure they are gzipped or they will fail to load**
+- `gzstatic/` - Any request invoked to `/static/<path>` goes to the gzstatic directory. This is a good place to put gzipped static resources that will not change. Such as the about page, the CSS, images, etc. Please note that gzipped pages cannot be rendered as templates. **For the sake of ease of development, the files in gzstatic are NOT gzipped in this repo. Before pushing them to your board, ensure they are gzipped or they will fail to load!**
 - `templates/` - These are the templates with variables. utemplate, the library used for templating, uses a very Jinja-like syntax. For exact examples, please see [miguelgrinberg's examples](https://github.com/miguelgrinberg/microdot/tree/main/examples/templates/utemplate).
 
 ## Shoutouts
