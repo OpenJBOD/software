@@ -66,7 +66,7 @@ except OSError:
 
 # SSL has been removed.
 # Removing deprecated option from config if present.
-if CONFIG['web']['use_tls'] is not None:
+if CONFIG.get('web').get('use_tls') is not None:
   del CONFIG['web']['use_tls']
   helpers.write_config(CONFIG)
 
