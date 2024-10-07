@@ -101,6 +101,11 @@ fan_fail.irq(trigger=Pin.IRQ_FALLING,handler=fan_fail_handler)
 
 psu = helpers.SRLatch(psu_set, psu_reset, psu_sense)
 
+if CONFIG['power']['on_boot']:
+  time.sleep(CONFIG['power']['on_boot_delay'])
+  if not psu.state():
+    psu.on()
+
 led.on()
 emc2301 = EMC2301(i2c)
 # This shouldn't need to be hardcoded.
