@@ -37,7 +37,6 @@ DEFAULT_CONFIG = {
     'ignore_fan_fail': False
   },
   'web': {
-    'use_tls': False,
     'users': {
       '1': {'username': 'admin', 'password': 'c37a6c962da994da14d7494769ff5d53aac6eaf0'}, #admin/openjbod
       '2': {'username': '', 'password': ''},
@@ -64,22 +63,12 @@ except OSError:
   print("[INIT] Config not found, writing and assuming defaults!")
   helpers.write_config(DEFAULT_CONFIG)
   CONFIG = helpers.read_config()
-  
-# SSL is unstable.
-# See https://github.com/OpenJBOD/software/issues/1
-if CONFIG['web']['use_tls']:
-  import ssl
-  try:
-    sslctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-    sslctx.load_cert_chain('cert.der', 'key.der')
-    print("[INIT] Loaded SSL Context!")
-  except ValueError as e:
-    print("[INIT] Value error! Reverting to non-SSL!")
-    print(e)
-    CONFIG['web']['use_tls'] = False
-  except OSError:
-    print("[INIT] No SSL certs! Reverting to non-SSL!")
-    CONFIG['web']['use_tls'] = False
+
+# SSL has been removed.
+# Removing deprecated option from config if present.
+if CONFIG['web']['use_tls'] is not None:
+  del CONFIG['web']['use_tls']
+  helpers.write_config(CONFIG)
 
 def fan_fail_handler(pin):
   # TODO: See https://github.com/OpenJBOD/software/issues/3
@@ -210,38 +199,6 @@ def webserver():
     helpers.write_config(CONFIG)
     return redirect('/')
 
-  @app.route('/upload/cert', methods=['POST'])
-  @auth
-  async def upload_cert(req):
-    filename = req.headers['Content-Disposition'].split(
-        'filename=')[1].strip('"')
-    size = int(req.headers['Content-Length'])
-    filename = "cert.der"
-    
-    with open(filename, 'wb') as f:
-      while size > 0:
-        chunk = await req.stream.read(min(size, 1024))
-        f.write(chunk)
-        size -= len(chunk)
-
-    return ''
-
-  @app.route('/upload/key', methods=['POST'])
-  @auth
-  async def upload_key(req):
-    filename = req.headers['Content-Disposition'].split(
-        'filename=')[1].strip('"')
-    size = int(req.headers['Content-Length'])
-    filename = "key.der"
-    
-    with open(filename, 'wb') as f:
-      while size > 0:
-        chunk = await req.stream.read(min(size, 1024))
-        f.write(chunk)
-        size -= len(chunk)
-
-    return ''
-
   # Pages
   @app.route('/settings/network', methods=['GET', 'POST'])
   @auth
@@ -311,18 +268,6 @@ def webserver():
         CONFIG['monitoring']['use_ext_probe'] = False
       return redirect('/settings/environment')
     return Template('settings_environment.html').render(config=CONFIG)
-
-  @app.route('/settings/tls', methods=['GET', 'POST'])
-  @auth
-  async def settings_tls(req):
-    if req.method == "POST":
-      if req.form.get('use_tls'):
-        CONFIG['web']['use_tls'] = True
-      else:
-        CONFIG['web']['use_tls'] = False
-      helpers.write_config(CONFIG)
-      return redirect('/settings/tls')
-    return Template('settings_tls.html').render(config=CONFIG)
 
   @app.route('/settings/users', methods=['GET', 'POST'])
   @auth
