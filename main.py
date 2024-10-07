@@ -333,15 +333,7 @@ def webserver():
   async def about(req):
     return send_file('gzstatic/about.html', compressed=True, file_extension='.gz')
   
-  if CONFIG['web']['use_tls']:
-    try:
-      app.run(port=443, debug=True, ssl=sslctx)
-    except OSError as e:
-      print("Unable to start SSL stream, reverting to non-SSL")
-      print(e)
-      app.run(port=80, debug=True)
-  else:
-      app.run(port=80, debug=True)
+  app.run(port=80, debug=True)
 
 _thread.start_new_thread(temp_monitor, ())
 webserver()
