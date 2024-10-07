@@ -136,6 +136,7 @@ def w5500_init(spi):
   while not nic.isconnected():
     sleep(1)
     print("[INIT] Not connected to NIC, waiting for IP...")
+    led.toggle()
   return nic.ifconfig()
 
 ifconfig = w5500_init(spi)
