@@ -22,6 +22,9 @@ For GUI tools:
 
 After copying the files, you can unplug the board and plug it into an ATX power supply, after which it will start the boot process and pick up an IP.
 
+> [!TIP]
+> The default username and password for the board's web UI is `admin`:`openjbod`!
+
 ## How to develop
 
 For current TODO items, see the `TODO` label in the Issues on this repository.
