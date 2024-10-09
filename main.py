@@ -1,4 +1,4 @@
-from machine import Pin, I2C, SPI, ADC
+from machine import Pin, I2C, SPI, ADC, UART
 from time import sleep
 from emc2301.emc2301 import EMC2301
 import helpers
@@ -12,6 +12,13 @@ from microdot.utemplate import Template
 from microdot.session import Session, with_session
 from microdot.auth import BasicAuth
 import sys
+
+# Start UART during boot process.
+# Default settings:
+# baudrate 9600, 8 bits, no parity, 1 stop bit
+uart0 = UART(0)
+uart0.init(tx=16, rx=17)
+os.dupterm(uart0)
 
 VERSION = "1.0.0"
 DEBUG = True
