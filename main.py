@@ -313,7 +313,7 @@ def webserver():
 
   @app.route('/settings/reset')
   @auth
-  async def settings_users(req):
+  async def settings_reset(req):
     return Template('settings_reset.html').render()
 
   @app.route('/')
