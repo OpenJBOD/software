@@ -20,7 +20,7 @@ uart0 = UART(0)
 uart0.init(tx=16, rx=17)
 os.dupterm(uart0)
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 DEFAULT_CONFIG = {
   'network': {
     'hostname': "openjbod",
