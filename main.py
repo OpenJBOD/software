@@ -81,10 +81,14 @@ def fan_fail_handler(pin):
   FAN_FAILED = True
 
 def power_btn_handler(pin):
+  # This is not a real debounce. It's a workaround.
+  power_btn.irq(handler=None)
   if psu.state():
     psu.off()
   else:
     psu.on()
+  time.sleep(1)
+  power_btn.irq(handler=power_btn_handler)
 
 # CHECK THESE FOR REV4
 # Busses
