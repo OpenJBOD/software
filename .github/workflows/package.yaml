@@ -92,7 +92,7 @@ jobs:
           prerelease: false
 
       - name: Upload asset
-        id: upload-asset
+        id: upload-zip-asset
         uses: actions/upload-release-asset@v1
         if: ${{ (github.event_name == 'push') && (startsWith(github.ref, 'refs/targs/v')) }}
         env:
@@ -102,3 +102,15 @@ jobs:
           asset_path: ./openjbod.zip
           asset_name: openjbod.zip
           asset_content_type: application/zip
+
+      - name: Upload asset
+        id: upload-mp-asset
+        uses: actions/upload-release-asset@v1
+        if: ${{ (github.event_name == 'push') && (startsWith(github.ref, 'refs/targs/v')) }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./micropython/ports/rp2/build-OPENJBOD_RP2040/firmware.uf2
+          asset_name: micropython-openjbod.uf2
+          asset_content_type: application/octet-stream
