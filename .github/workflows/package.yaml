@@ -43,6 +43,9 @@ jobs:
       - name: Copy board definitions to MicroPython
         run: cp -r openjbod/boards/OPENJBOD_RP2040 micropython/ports/rp2/boards/
 
+      - name: Copy _boot.py to MicroPython
+        run: cp openjbod/_boot.py micropython/ports/rp2/modules/_boot.py
+
       - name: Install Python requirements
         run: "pip install freezefs"
 
@@ -60,9 +63,6 @@ jobs:
 
       - name: Freeze OpenJBOD Software
         run: python3 -m freezefs software/ micropython/ports/rp2/boards/OPENJBOD_RP2040/frozen_openjbod.py --on-import=extract --compress -t / -ov always
-
-      - name: Copy _boot.py to MicroPython
-        run: cp software/_boot.py micropython/ports/rp2/modules/_boot.py
 
       - name: Build mpy-cross
         run: make -j $(nproc) -C micropython/mpy-cross/
