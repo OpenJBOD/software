@@ -1,15 +1,21 @@
 # OpenJBOD Software
 
-The OpenJBOD Software is a Python-based software package for managing an OpenJBOD baseboard.
+The OpenJBOD Software is a Python-based software package for managing an OpenJBOD controller.
 
 ## Requirements
 
-- MicroPython v1.23.0 or greater, compiled with W5500 support. (Ideally, also with 16 MB flash support, most versions only have 2MB support compiled into them.
+- An OpenJBOD RP2040 controller
+- MicroPython v1.23.0 or newer
 > [!TIP]
-> A specific MicroPython binary file can be found by going to the [Actions section of openjbod/micropython](https://github.com/OpenJBOD/micropython/actions), where it can be downloaded by clicking the latest build and grabbing the `firmware.uf2` file from the artifacts.
-- An OpenJBOD RP2040 baseboard
+> You can download a combined firmware package with both MicroPython and the OpenJBOD software by going to this repository's [releases page](https://github.com/OpenJBOD/software/releases) and downloading the .uf2 file in the Assets section.
 
 ## How to deploy
+
+Starting with version 1.1.0 of the OpenJBOD software. It is compiled into a firmware image that includes MicroPython and the OpenJBOD software. After copying the firmware image to your board, it will automatically extract the files required to run the board on boot.
+
+Simply put your board into flashing mode by holding the BOOTSEL button, then dragging the .uf2 file found in the Releases on this repository onto your board. You can also load the .uf2 file using [picotool](https://github.com/raspberrypi/picotool).
+
+The instructions below are for manual installation to the board with a separate MicroPython firmware:
 
 All files and folders in this repo (except documentation) should be uploaded to the board after installing. Contents of the `gzstatic` folder should be gzipped before being copied to the board.
 
