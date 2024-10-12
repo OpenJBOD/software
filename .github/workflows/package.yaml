@@ -1,23 +1,88 @@
 on:
+  pull_request:
   push:
+    branches:
+      - '**'
     tags:
       - 'v*'
 
-name: Create Release
+name: Build MicroPython and Release
 jobs:
   build:
-    name: Create Release
+    name: Build and Release
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout micropython
         uses: actions/checkout@main
+        with:
+          repository: 'micropython/micropython'
+          ref: 'v1.23.0'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          submodules: 'true'
+          path: 'micropython'
+
+      - name: Checkout OpenJBOD board definitions
+        uses: actions/checkout@main
+        with:
+          repository: 'openjbod/micropython'
+          path: 'openjbod'
+
+      - name: Checkout OpenJBOD software
+        uses: actions/checkout@main
+        with:
+          path: 'software'
+
+      - name: Install build tools
+        run: sudo apt-get install pkg-config gcc-arm-none-eabi libnewlib-arm-none-eabi
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Copy board definitions to MicroPython
+        run: cp -r openjbod/boards/OPENJBOD_RP2040 micropython/ports/rp2/boards/
+
+      - name: Copy _boot.py to MicroPython
+        run: cp openjbod/_boot.py micropython/ports/rp2/modules/_boot.py
+
+      - name: Install Python requirements
+        run: "pip install freezefs"
+
       - name: Gzip static files
-        run: "for file in gzstatic/*; do gzip $file; done"
+        run: "for file in software/gzstatic/*; do gzip $file; done"
+
       - name: Create release zip
-        run: "zip openjbod.zip -r * -x README.md LICENSE.md @"
+        run: "zip openjbod.zip -r software/* -x README.md LICENSE.md @"
+
+      - name: Upload release zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: openjbod
+          path: ./software
+
+      - name: Freeze OpenJBOD Software
+        run: python3 -m freezefs software/ micropython/ports/rp2/boards/OPENJBOD_RP2040/frozen_openjbod.py --on-import=extract --compress -t / -ov always
+
+      - name: Build mpy-cross
+        run: make -j $(nproc) -C micropython/mpy-cross/
+
+      - name: Fetch MicroPython submodules
+        run: make -j $(nproc) -C micropython/ports/rp2 BOARD=OPENJBOD_RP2040 submodules
+
+      - name: Build MicroPython
+        run: make -j $(nproc) -C micropython/ports/rp2 BOARD=OPENJBOD_RP2040
+
+      - name: Upload MicroPython artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: openjbod-firmware
+          path: micropython/ports/rp2/build-OPENJBOD_RP2040/firmware.uf2
+
       - name: Create release
         id: create_release
         uses: actions/create-release@latest
+        if: ${{ (github.event_name == 'push') && (startsWith(github.ref, 'refs/targs/v')) }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -25,9 +90,11 @@ jobs:
           release_name: Release ${{ github.ref }}
           draft: false
           prerelease: false
+
       - name: Upload asset
         id: upload-asset
         uses: actions/upload-release-asset@v1
+        if: ${{ (github.event_name == 'push') && (startsWith(github.ref, 'refs/targs/v')) }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
