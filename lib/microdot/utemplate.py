@@ -9,9 +9,9 @@ class Template:
     :param template: The filename of the template to render, relative to the
                      configured template directory.
     """
+
     @classmethod
-    def initialize(cls, template_dir='templates',
-                   loader_class=recompile.Loader):
+    def initialize(cls, template_dir="templates", loader_class=recompile.Loader):
         """Initialize the templating subsystem.
 
         :param template_dir: the directory where templates are stored. This
@@ -41,12 +41,13 @@ class Template:
     def render(self, *args, **kwargs):
         """Render the template with the given arguments and return it as a
         string."""
-        return ''.join(self.generate(*args, **kwargs))
+        return "".join(self.generate(*args, **kwargs))
 
     def generate_async(self, *args, **kwargs):
         """Return an asynchronous generator that renders the template in
         chunks, using the given arguments."""
-        class sync_to_async_iter():
+
+        class sync_to_async_iter:
             def __init__(self, iter):
                 self.iter = iter
 
@@ -64,7 +65,7 @@ class Template:
     async def render_async(self, *args, **kwargs):
         """Render the template with the given arguments asynchronously and
         return it as a string."""
-        response = ''
+        response = ""
         async for chunk in self.generate_async(*args, **kwargs):
             response += chunk
         return response

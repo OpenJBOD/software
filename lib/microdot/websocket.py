@@ -7,6 +7,7 @@ from microdot.helpers import wraps
 
 class WebSocketError(Exception):
     """Exception raised when an error occurs in a WebSocket connection."""
+
     pass
 
 
@@ -16,6 +17,7 @@ class WebSocket:
     An instance of this class is sent to handler functions to manage the
     WebSocket connection.
     """
+
     CONT = 0
     TEXT = 1
     BINARY = 2
@@ -41,12 +43,12 @@ class WebSocket:
 
     async def handshake(self):
         response = self._handshake_response()
+        await self.request.sock[1].awrite(b"HTTP/1.1 101 Switching Protocols\r\n")
+        await self.request.sock[1].awrite(b"Upgrade: websocket\r\n")
+        await self.request.sock[1].awrite(b"Connection: Upgrade\r\n")
         await self.request.sock[1].awrite(
-            b'HTTP/1.1 101 Switching Protocols\r\n')
-        await self.request.sock[1].awrite(b'Upgrade: websocket\r\n')
-        await self.request.sock[1].awrite(b'Connection: Upgrade\r\n')
-        await self.request.sock[1].awrite(
-            b'Sec-WebSocket-Accept: ' + response + b'\r\n\r\n')
+            b"Sec-WebSocket-Accept: " + response + b"\r\n\r\n"
+        )
 
     async def receive(self):
         """Receive a message from the client."""
@@ -67,15 +69,15 @@ class WebSocket:
                        data.
         """
         frame = self._encode_websocket_frame(
-            opcode or (self.TEXT if isinstance(data, str) else self.BINARY),
-            data)
+            opcode or (self.TEXT if isinstance(data, str) else self.BINARY), data
+        )
         await self.request.sock[1].awrite(frame)
 
     async def close(self):
         """Close the websocket connection."""
         if not self.closed:  # pragma: no cover
             self.closed = True
-            await self.send(b'', self.CLOSE)
+            await self.send(b"", self.CLOSE)
 
     def _handshake_response(self):
         connection = False
@@ -83,30 +85,30 @@ class WebSocket:
         websocket_key = None
         for header, value in self.request.headers.items():
             h = header.lower()
-            if h == 'connection':
+            if h == "connection":
                 connection = True
-                if 'upgrade' not in value.lower():
+                if "upgrade" not in value.lower():
                     return self.request.app.abort(400)
-            elif h == 'upgrade':
+            elif h == "upgrade":
                 upgrade = True
-                if not value.lower() == 'websocket':
+                if not value.lower() == "websocket":
                     return self.request.app.abort(400)
-            elif h == 'sec-websocket-key':
+            elif h == "sec-websocket-key":
                 websocket_key = value
         if not connection or not upgrade or not websocket_key:
             return self.request.app.abort(400)
         d = hashlib.sha1(websocket_key.encode())
-        d.update(b'258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
+        d.update(b"258EAFA5-E914-47DA-95CA-C5AB0DC85B11")
         return binascii.b2a_base64(d.digest())[:-1]
 
     @classmethod
     def _parse_frame_header(cls, header):
         fin = header[0] & 0x80
-        opcode = header[0] & 0x0f
+        opcode = header[0] & 0x0F
         if fin == 0 or opcode == cls.CONT:  # pragma: no cover
-            raise WebSocketError('Continuation frames not supported')
+            raise WebSocketError("Continuation frames not supported")
         has_mask = header[1] & 0x80
-        length = header[1] & 0x7f
+        length = header[1] & 0x7F
         if length == 126:
             length = -2
         elif length == 127:
@@ -119,7 +121,7 @@ class WebSocket:
         elif opcode == self.BINARY:
             pass
         elif opcode == self.CLOSE:
-            raise WebSocketError('Websocket connection closed')
+            raise WebSocketError("Websocket connection closed")
         elif opcode == self.PING:
             return self.PONG, payload
         elif opcode == self.PONG:  # pragma: no branch
@@ -136,28 +138,31 @@ class WebSocket:
             frame.append(len(payload))
         elif len(payload) < (1 << 16):
             frame.append(126)
-            frame.extend(len(payload).to_bytes(2, 'big'))
+            frame.extend(len(payload).to_bytes(2, "big"))
         else:
             frame.append(127)
-            frame.extend(len(payload).to_bytes(8, 'big'))
+            frame.extend(len(payload).to_bytes(8, "big"))
         frame.extend(payload)
         return frame
 
     async def _read_frame(self):
         header = await self.request.sock[0].read(2)
         if len(header) != 2:  # pragma: no cover
-            raise WebSocketError('Websocket connection closed')
+            raise WebSocketError("Websocket connection closed")
         fin, opcode, has_mask, length = self._parse_frame_header(header)
         if length == -2:
             length = await self.request.sock[0].read(2)
-            length = int.from_bytes(length, 'big')
+            length = int.from_bytes(length, "big")
         elif length == -8:
             length = await self.request.sock[0].read(8)
-            length = int.from_bytes(length, 'big')
-        max_allowed_length = Request.max_body_length \
-            if self.max_message_length == -1 else self.max_message_length
+            length = int.from_bytes(length, "big")
+        max_allowed_length = (
+            Request.max_body_length
+            if self.max_message_length == -1
+            else self.max_message_length
+        )
         if length > max_allowed_length:
-            raise WebSocketError('Message too large')
+            raise WebSocketError("Message too large")
         if has_mask:  # pragma: no cover
             mask = await self.request.sock[0].read(4)
         payload = await self.request.sock[0].read(length)
@@ -211,6 +216,7 @@ def websocket_wrapper(f, upgrade_function):
             except Exception:
                 pass
         return Response.already_handled
+
     return wrapper
 
 

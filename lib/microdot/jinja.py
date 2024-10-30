@@ -9,9 +9,9 @@ class Template:
     :param template: The filename of the template to render, relative to the
                      configured template directory.
     """
+
     @classmethod
-    def initialize(cls, template_dir='templates', enable_async=False,
-                   **kwargs):
+    def initialize(cls, template_dir="templates", enable_async=False, **kwargs):
         """Initialize the templating subsystem.
 
         :param template_dir: the directory where templates are stored. This

@@ -24,12 +24,14 @@ class BaseAuth:
         authentication callback returned a valid user object, otherwise the
         error callback will be executed.
         """
+
         async def wrapper(request, *args, **kwargs):
             auth = self._get_auth(request)
             if not auth:
                 return await invoke_handler(self.error_callback, request)
             request.g.current_user = await invoke_handler(
-                self.auth_callback, request, *auth)
+                self.auth_callback, request, *auth
+            )
             if not request.g.current_user:
                 return await invoke_handler(self.error_callback, request)
             return await invoke_handler(f, request, *args, **kwargs)
@@ -47,8 +49,10 @@ class BasicAuth(BaseAuth):
     :param error_status: The error status code to return when authentication
                          fails. Defaults to 401.
     """
-    def __init__(self, realm='Please login', charset='UTF-8', scheme='Basic',
-                 error_status=401):
+
+    def __init__(
+        self, realm="Please login", charset="UTF-8", scheme="Basic", error_status=401
+    ):
         super().__init__()
         self.realm = realm
         self.charset = charset
@@ -57,20 +61,28 @@ class BasicAuth(BaseAuth):
         self.error_callback = self.authentication_error
 
     def _get_auth(self, request):
-        auth = request.headers.get('Authorization')
-        if auth and auth.startswith('Basic '):
+        auth = request.headers.get("Authorization")
+        if auth and auth.startswith("Basic "):
             import binascii
+
             try:
-                username, password = binascii.a2b_base64(
-                    auth[6:]).decode().split(':', 1)
+                username, password = (
+                    binascii.a2b_base64(auth[6:]).decode().split(":", 1)
+                )
             except Exception:  # pragma: no cover
                 return None
             return username, password
 
     def authentication_error(self, request):
-        return '', self.error_status, {
-            'WWW-Authenticate': '{} realm="{}", charset="{}"'.format(
-                self.scheme, self.realm, self.charset)}
+        return (
+            "",
+            self.error_status,
+            {
+                "WWW-Authenticate": '{} realm="{}", charset="{}"'.format(
+                    self.scheme, self.realm, self.charset
+                )
+            },
+        )
 
     def authenticate(self, f):
         """Decorator to configure the authentication callback.
@@ -97,8 +109,8 @@ class TokenAuth(BaseAuth):
     :param error_status: The error status code to return when authentication
                          fails. Defaults to 401.
     """
-    def __init__(self, header='Authorization', scheme='Bearer',
-                 error_status=401):
+
+    def __init__(self, header="Authorization", scheme="Bearer", error_status=401):
         super().__init__()
         self.header = header
         self.scheme = scheme.lower()
@@ -108,9 +120,9 @@ class TokenAuth(BaseAuth):
     def _get_auth(self, request):
         auth = request.headers.get(self.header)
         if auth:
-            if self.header == 'Authorization':
+            if self.header == "Authorization":
                 try:
-                    scheme, token = auth.split(' ', 1)
+                    scheme, token = auth.split(" ", 1)
                 except Exception:
                     return None
                 if scheme.lower() == self.scheme:

@@ -44,7 +44,9 @@ def encode(payload, key, algorithm="HS256"):
         key = key.encode()
     header = _to_b64url(json.dumps({"typ": "JWT", "alg": algorithm}).encode())
     payload = _to_b64url(json.dumps(payload).encode())
-    signature = _to_b64url(hmac.new(key, header + b"." + payload, hashlib.sha256).digest())
+    signature = _to_b64url(
+        hmac.new(key, header + b"." + payload, hashlib.sha256).digest()
+    )
     return (header + b"." + payload + b"." + signature).decode()
 
 
@@ -68,7 +70,9 @@ def decode(token, key, algorithms=["HS256"]):
 
     if isinstance(key, str):
         key = key.encode()
-    calculated_signature = hmac.new(key, parts[0] + b"." + parts[1], hashlib.sha256).digest()
+    calculated_signature = hmac.new(
+        key, parts[0] + b"." + parts[1], hashlib.sha256
+    ).digest()
     if signature != calculated_signature:
         raise exceptions.InvalidSignatureError
 

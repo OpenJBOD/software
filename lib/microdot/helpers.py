@@ -5,4 +5,5 @@ except ImportError:  # pragma: no cover
     def wraps(wrapped):
         def _(wrapper):
             return wrapper
+
         return _

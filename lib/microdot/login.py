@@ -4,7 +4,7 @@ from microdot.microdot import urlencode, invoke_handler
 
 
 class Login:
-    def __init__(self, login_url='/login'):
+    def __init__(self, login_url="/login"):
         self.login_url = login_url
         self.user_callback = None
         self.user_id_callback = lambda user: user.id
@@ -31,40 +31,37 @@ class Login:
         return request.app._session.get(request)
 
     def _update_remember_cookie(self, request, days, user_id=None):
-        remember_payload = request.app._session.encode({
-            'user_id': user_id,
-            'days': days,
-            'exp': time() + days * 24 * 60 * 60
-        })
+        remember_payload = request.app._session.encode(
+            {"user_id": user_id, "days": days, "exp": time() + days * 24 * 60 * 60}
+        )
 
         @request.after_request
         async def _set_remember_cookie(request, response):
-            response.set_cookie('_remember', remember_payload,
-                                max_age=days * 24 * 60 * 60)
+            response.set_cookie(
+                "_remember", remember_payload, max_age=days * 24 * 60 * 60
+            )
             return response
 
     def _get_user_id_from_session(self, request):
         session = self._get_session(request)
-        if session and '_user_id' in session:
-            return session['_user_id']
-        if '_remember' in request.cookies:
-            remember_payload = request.app._session.decode(
-                request.cookies['_remember'])
-            user_id = remember_payload.get('user_id')
+        if session and "_user_id" in session:
+            return session["_user_id"]
+        if "_remember" in request.cookies:
+            remember_payload = request.app._session.decode(request.cookies["_remember"])
+            user_id = remember_payload.get("user_id")
             if user_id:  # pragma: no branch
                 self._update_remember_cookie(
-                    request, remember_payload.get('_days', 30), user_id)
-                session['_user_id'] = user_id
-                session['_fresh'] = False
+                    request, remember_payload.get("_days", 30), user_id
+                )
+                session["_user_id"] = user_id
+                session["_fresh"] = False
                 session.save()
                 return user_id
 
     async def _redirect_to_login(self, request):
-        return '', 302, {'Location': self.login_url + '?next=' + urlencode(
-            request.url)}
+        return "", 302, {"Location": self.login_url + "?next=" + urlencode(request.url)}
 
-    async def login_user(self, request, user, remember=False,
-                         redirect_url='/'):
+    async def login_user(self, request, user, remember=False, redirect_url="/"):
         """Log a user in.
 
         :param request: the request object
@@ -84,16 +81,16 @@ class Login:
         specified by the `redirect_url`.
         """
         session = self._get_session(request)
-        session['_user_id'] = await invoke_handler(self.user_id_callback, user)
-        session['_fresh'] = True
+        session["_user_id"] = await invoke_handler(self.user_id_callback, user)
+        session["_fresh"] = True
         session.save()
 
         if remember:
             days = 30 if remember is True else int(remember)
-            self._update_remember_cookie(request, days, session['_user_id'])
+            self._update_remember_cookie(request, days, session["_user_id"])
 
-        next_url = request.args.get('next', redirect_url)
-        if not next_url.startswith('/'):
+        next_url = request.args.get("next", redirect_url)
+        if not next_url.startswith("/"):
             next_url = redirect_url
         return redirect(next_url)
 
@@ -106,10 +103,10 @@ class Login:
         session. If a remember cookie exists, it is removed as well.
         """
         session = self._get_session(request)
-        session.pop('_user_id', None)
-        session.pop('_fresh', None)
+        session.pop("_user_id", None)
+        session.pop("_fresh", None)
         session.save()
-        if '_remember' in request.cookies:
+        if "_remember" in request.cookies:
             self._update_remember_cookie(request, 0)
 
     def __call__(self, f):
@@ -119,12 +116,12 @@ class Login:
         first. The decorated route will only run after successful login by the
         user. If the user is already logged in, the route will run immediately.
         """
+
         async def wrapper(request, *args, **kwargs):
             user_id = self._get_user_id_from_session(request)
             if not user_id:
                 return await self._redirect_to_login(request)
-            request.g.current_user = await invoke_handler(
-                self.user_callback, user_id)
+            request.g.current_user = await invoke_handler(self.user_callback, user_id)
             if not request.g.current_user:
                 return await self._redirect_to_login(request)
             return await invoke_handler(f, request, *args, **kwargs)
@@ -143,7 +140,7 @@ class Login:
 
         async def wrapper(request, *args, **kwargs):
             session = self._get_session(request)
-            if session.get('_fresh'):
+            if session.get("_fresh"):
                 return await base_wrapper(request, *args, **kwargs)
             return await self._redirect_to_login(request)
 

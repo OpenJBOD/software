@@ -2,10 +2,17 @@ import asyncio
 import os
 import signal
 from microdot import *  # noqa: F401, F403
-from microdot.microdot import Microdot as BaseMicrodot, Request, NoCaseDict, \
-    MUTED_SOCKET_ERRORS
-from microdot.websocket import WebSocket, websocket_upgrade, \
-    with_websocket  # noqa: F401
+from microdot.microdot import (
+    Microdot as BaseMicrodot,
+    Request,
+    NoCaseDict,
+    MUTED_SOCKET_ERRORS,
+)
+from microdot.websocket import (
+    WebSocket,
+    websocket_upgrade,
+    with_websocket,
+)  # noqa: F401
 
 
 class Microdot(BaseMicrodot):
@@ -15,6 +22,7 @@ class Microdot(BaseMicrodot):
     This class must be used as the application instance when running under a
     WSGI web server.
     """
+
     def __init__(self):
         super().__init__()
         self.loop = asyncio.new_event_loop()
@@ -22,22 +30,22 @@ class Microdot(BaseMicrodot):
 
     def wsgi_app(self, environ, start_response):
         """A WSGI application callable."""
-        path = environ.get('SCRIPT_NAME', '') + environ.get('PATH_INFO', '')
-        if 'QUERY_STRING' in environ and environ['QUERY_STRING']:
-            path += '?' + environ['QUERY_STRING']
+        path = environ.get("SCRIPT_NAME", "") + environ.get("PATH_INFO", "")
+        if "QUERY_STRING" in environ and environ["QUERY_STRING"]:
+            path += "?" + environ["QUERY_STRING"]
         headers = NoCaseDict()
         content_length = 0
         for k, value in environ.items():
-            if k.startswith('HTTP_'):
-                key = '-'.join([p.title() for p in k[5:].split('_')])
+            if k.startswith("HTTP_"):
+                key = "-".join([p.title() for p in k[5:].split("_")])
                 headers[key] = value
-            elif k == 'CONTENT_TYPE':
-                headers['Content-Type'] = value
-            elif k == 'CONTENT_LENGTH':
-                headers['Content-Length'] = value
+            elif k == "CONTENT_TYPE":
+                headers["Content-Type"] = value
+            elif k == "CONTENT_LENGTH":
+                headers["Content-Length"] = value
                 content_length = int(value)
 
-        class sync_to_async_body_stream():  # pragma: no cover
+        class sync_to_async_body_stream:  # pragma: no cover
             def __init__(self, wsgi_input=None):
                 self.wsgi_input = wsgi_input
 
@@ -50,14 +58,14 @@ class Microdot(BaseMicrodot):
             async def readexactly(self, n):
                 return self.wsgi_input.read(n)
 
-        wsgi_input = environ.get('wsgi.input')
+        wsgi_input = environ.get("wsgi.input")
         if content_length and content_length <= Request.max_body_length:
             # the request came with a body that is within the allowed size
             body = wsgi_input.read(content_length)
             stream = None
             sock = (None, None)
         else:
-            body = b''
+            body = b""
             if content_length:
                 # the request came with a body that is too large to fit in
                 # memory, so we stream it
@@ -67,11 +75,12 @@ class Microdot(BaseMicrodot):
                 # the request did not declare a body size, so we connect the
                 # raw socket if available
                 stream = None
-                if 'gunicorn.socket' in environ:  # pragma: no cover
+                if "gunicorn.socket" in environ:  # pragma: no cover
                     reader, writer = self.loop.run_until_complete(
-                        asyncio.open_connection(
-                            sock=environ['gunicorn.socket'].dup()))
-                    if not hasattr(writer, 'awrite'):  # pragma: no cover
+                        asyncio.open_connection(sock=environ["gunicorn.socket"].dup())
+                    )
+                    if not hasattr(writer, "awrite"):  # pragma: no cover
+
                         async def awrite(self, data):
                             self.write(data)
                             await self.drain()
@@ -81,6 +90,7 @@ class Microdot(BaseMicrodot):
                             await self.wait_closed()
 
                         from types import MethodType
+
                         writer.awrite = MethodType(awrite, writer)
                         writer.aclose = MethodType(aclose, writer)
                     sock = (reader, writer)
@@ -89,14 +99,15 @@ class Microdot(BaseMicrodot):
 
         req = Request(
             self,
-            (environ['REMOTE_ADDR'], int(environ.get('REMOTE_PORT', '0'))),
-            environ['REQUEST_METHOD'],
+            (environ["REMOTE_ADDR"], int(environ.get("REMOTE_PORT", "0"))),
+            environ["REQUEST_METHOD"],
             path,
-            environ['SERVER_PROTOCOL'],
+            environ["SERVER_PROTOCOL"],
             headers,
             body=body,
             stream=stream,
-            sock=sock)
+            sock=sock,
+        )
         req.environ = environ
 
         res = self.loop.run_until_complete(self.dispatch_request(req))
@@ -110,7 +121,7 @@ class Microdot(BaseMicrodot):
                 else:
                     raise
 
-        reason = res.reason or ('OK' if res.status_code == 200 else 'N/A')
+        reason = res.reason or ("OK" if res.status_code == 200 else "N/A")
         header_list = []
         for name, value in res.headers.items():
             if not isinstance(value, list):
@@ -118,9 +129,9 @@ class Microdot(BaseMicrodot):
             else:
                 for v in value:
                     header_list.append((name, v))
-        start_response(str(res.status_code) + ' ' + reason, header_list)
+        start_response(str(res.status_code) + " " + reason, header_list)
 
-        class async_to_sync_iter():
+        class async_to_sync_iter:
             def __init__(self, iter, loop):
                 self.iter = iter.__aiter__()
                 self.loop = loop
@@ -135,7 +146,7 @@ class Microdot(BaseMicrodot):
                     raise StopIteration
 
             def close(self):  # pragma: no cover
-                if hasattr(self.iter, 'aclose'):
+                if hasattr(self.iter, "aclose"):
                     self.loop.run_until_complete(self.iter.aclose())
 
         return async_to_sync_iter(res.body_iter(), self.loop)
@@ -147,11 +158,12 @@ class Microdot(BaseMicrodot):
         if self.embedded_server:  # pragma: no cover
             super().shutdown()
         else:
-            pid = os.getpgrp() if hasattr(os, 'getpgrp') else os.getpid()
+            pid = os.getpgrp() if hasattr(os, "getpgrp") else os.getpid()
             os.kill(pid, signal.SIGTERM)
 
-    def run(self, host='0.0.0.0', port=5000, debug=False,
-            **options):  # pragma: no cover
+    def run(
+        self, host="0.0.0.0", port=5000, debug=False, **options
+    ):  # pragma: no cover
         """Normally you would not start the server by invoking this method.
         Instead, start your chosen WSGI web server and pass the ``Microdot``
         instance as the WSGI callable.
