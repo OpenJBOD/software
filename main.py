@@ -348,6 +348,33 @@ def webserver():
     async def settings_reset(req):
         return Template("settings_reset.html").render()
 
+    @app.route("/temperatures", methods=["GET"])
+    @auth
+    async def get_temperatures():
+        temperatures = {}
+        temperatures["rp2040"] = helpers.get_rp2040_temp()
+        if CONFIG["monitoring"]["use_ds18x20"]:
+            temperatures["chassis"] = helpers.get_ds18x20_temp(ds_sensor, ds_rom)
+        return temperatures
+
+    @app.route("/fanmode", methods=["POST"])
+    @auth
+    async def set_fan_ctrl(req):
+        if "use_ext_fan_ctrl" in req and isinstance(
+            req["use_ext_fan_ctrl"], (int, float)
+        ):
+            CONFIG["monitoring"]["use_ext_fan_ctrl"] = req["use_ext_fan_ctrl"]
+        return {"status": "success"}
+
+    @app.route("/fans", methods=["POST"])
+    @auth
+    async def set_fans(req):
+        if "fan0" in req and isinstance(req["fan0"], (int, float)):
+            CONFIG["monitoring"]["use_ext_fan_ctrl"] = True
+            duty_cycle = helpers.percent_to_duty(req["fan0"])
+            emc2301.set_pwm_duty_cycle(duty_cycle)
+        return {"status": "success"}
+
     @app.route("/")
     @app.route("/index")
     @auth
