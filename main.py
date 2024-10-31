@@ -40,6 +40,7 @@ DEFAULT_CONFIG = {
     "monitoring": {
         "use_ds18x20": True,
         "use_ext_probe": False,
+        "use_ext_fan_ctrl": False,
         "ignore_fan_fail": False,
     },
     "web": {
@@ -165,7 +166,7 @@ print(ifconfig)
 
 def temp_monitor():
     while True:
-        if psu_sense.value():
+        if psu_sense.value() and not CONFIG["monitoring"]["use_ext_fan_ctrl"]:
             if CONFIG["monitoring"]["use_ds18x20"]:
                 temp = helpers.get_ds18x20_temp(ds_sensor, ds_rom)
             else:
@@ -276,6 +277,10 @@ def webserver():
             else:
                 old_ds18x20 = CONFIG["monitoring"]["use_ext_probe"]
                 CONFIG["monitoring"]["use_ext_probe"] = False
+            if req.form.get("use_ext_fan_ctrl"):
+                CONFIG["monitoring"]["use_ext_fan_ctrl"] = True
+            else:
+                CONFIG["monitoring"]["use_ext_fan_ctrl"] = False
             if req.form.get("ignore_fan_fail"):
                 CONFIG["monitoring"]["ignore_fan_fail"] = True
             else:
