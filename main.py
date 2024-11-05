@@ -40,6 +40,7 @@ DEFAULT_CONFIG = {
     "monitoring": {
         "use_ds18x20": True,
         "use_ext_probe": False,
+        "use_ext_fan_ctrl": False,
         "ignore_fan_fail": False,
     },
     "web": {
@@ -165,7 +166,7 @@ print(ifconfig)
 
 def temp_monitor():
     while True:
-        if psu_sense.value():
+        if psu_sense.value() and not CONFIG["monitoring"]["use_ext_fan_ctrl"]:
             if CONFIG["monitoring"]["use_ds18x20"]:
                 temp = helpers.get_ds18x20_temp(ds_sensor, ds_rom)
             else:
@@ -276,6 +277,10 @@ def webserver():
             else:
                 old_ds18x20 = CONFIG["monitoring"]["use_ext_probe"]
                 CONFIG["monitoring"]["use_ext_probe"] = False
+            if req.form.get("use_ext_fan_ctrl"):
+                CONFIG["monitoring"]["use_ext_fan_ctrl"] = True
+            else:
+                CONFIG["monitoring"]["use_ext_fan_ctrl"] = False
             if req.form.get("ignore_fan_fail"):
                 CONFIG["monitoring"]["ignore_fan_fail"] = True
             else:
@@ -342,6 +347,33 @@ def webserver():
     @auth
     async def settings_reset(req):
         return Template("settings_reset.html").render()
+
+    @app.route("/api/temperatures")
+    @auth
+    async def get_temperatures(req):
+        temperatures = {}
+        temperatures["rp2040"] = helpers.get_rp2040_temp()
+        if CONFIG["monitoring"]["use_ds18x20"]:
+            temperatures["chassis"] = helpers.get_ds18x20_temp(ds_sensor, ds_rom)
+        return temperatures
+
+    @app.route("/api/fanmode", methods=["POST"])
+    @auth
+    async def set_fan_ctrl(req):
+        if "use_ext_fan_ctrl" in req.json and isinstance(
+            req.json["use_ext_fan_ctrl"], (int, float)
+        ):
+            CONFIG["monitoring"]["use_ext_fan_ctrl"] = req.json["use_ext_fan_ctrl"]
+        return {"status": "success"}
+
+    @app.route("/api/fans", methods=["POST"])
+    @auth
+    async def set_fans(req):
+        if "fan0" in req.json and isinstance(req.json["fan0"], (int, float)):
+            CONFIG["monitoring"]["use_ext_fan_ctrl"] = True
+            duty_cycle = helpers.percent_to_duty(req.json["fan0"])
+            emc2301.set_pwm_duty_cycle(duty_cycle)
+        return {"status": "success"}
 
     @app.route("/")
     @app.route("/index")
