@@ -348,7 +348,7 @@ def webserver():
     async def settings_reset(req):
         return Template("settings_reset.html").render()
 
-    @app.route("/temperatures")
+    @app.route("/api/temperatures")
     @auth
     async def get_temperatures(req):
         temperatures = {}
@@ -357,16 +357,16 @@ def webserver():
             temperatures["chassis"] = helpers.get_ds18x20_temp(ds_sensor, ds_rom)
         return temperatures
 
-    @app.route("/fanmode", methods=["POST"])
+    @app.route("/api/fanmode", methods=["POST"])
     @auth
     async def set_fan_ctrl(req):
-        if "use_ext_fan_ctrl" in req and isinstance(
-            req["use_ext_fan_ctrl"], (int, float)
+        if "use_ext_fan_ctrl" in req.json and isinstance(
+            req.json["use_ext_fan_ctrl"], (int, float)
         ):
-            CONFIG["monitoring"]["use_ext_fan_ctrl"] = req["use_ext_fan_ctrl"]
+            CONFIG["monitoring"]["use_ext_fan_ctrl"] = req.json["use_ext_fan_ctrl"]
         return {"status": "success"}
 
-    @app.route("/fans", methods=["POST"])
+    @app.route("/api/fans", methods=["POST"])
     @auth
     async def set_fans(req):
         if "fan0" in req.json and isinstance(req.json["fan0"], (int, float)):
