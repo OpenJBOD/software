@@ -1,4 +1,4 @@
-from machine import Pin, I2C, SPI, ADC, UART
+from machine import Pin, I2C, SPI, ADC, UART, Timer
 from time import sleep
 from emc2301.emc2301 import EMC2301
 import helpers
@@ -139,6 +139,23 @@ else:
     ds_rom = ds_roms[0]
 
 
+def temp_monitor():
+    if psu_sense.value() and not CONFIG["monitoring"]["use_ext_fan_ctrl"]:
+        if CONFIG["monitoring"]["use_ds18x20"]:
+            temp = helpers.get_ds18x20_temp(ds_sensor, ds_rom)
+        else:
+            temp = helpers.get_rp2040_temp()
+        fan_p = helpers.check_temp(temp, CONFIG["fan_curve"])
+        duty_cycle = helpers.percent_to_duty(fan_p)
+        emc2301.set_pwm_duty_cycle(duty_cycle)
+
+
+temp_monitor_timer = Timer()
+temp_monitor_timer.init(
+    mode=Timer.PERIODIC, freq=0.05, callback=lambda t: temp_monitor()
+)
+
+
 def w5500_init(spi):
     nic = network.WIZNET5K(spi, Pin(5), Pin(0))  # Bus, CSn, RSTn
     # Setting the hostname currently does nothing.
@@ -162,21 +179,6 @@ def w5500_init(spi):
 ifconfig = w5500_init(spi)
 MAC_ADDR = helpers.get_mac_address(spi, Pin(5))
 print(ifconfig)
-
-
-def temp_monitor():
-    while True:
-        if psu_sense.value() and not CONFIG["monitoring"]["use_ext_fan_ctrl"]:
-            if CONFIG["monitoring"]["use_ds18x20"]:
-                temp = helpers.get_ds18x20_temp(ds_sensor, ds_rom)
-            else:
-                temp = helpers.get_rp2040_temp()
-            fan_p = helpers.check_temp(temp, CONFIG["fan_curve"])
-            duty_cycle = helpers.percent_to_duty(fan_p)
-            emc2301.set_pwm_duty_cycle(duty_cycle)
-        else:
-            continue
-        time.sleep(20)
 
 
 def webserver():
@@ -402,5 +404,4 @@ def webserver():
     app.run(port=80, debug=True)
 
 
-_thread.start_new_thread(temp_monitor, ())
 webserver()
