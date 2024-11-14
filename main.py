@@ -85,16 +85,17 @@ def fan_fail_handler(pin):
     # TODO: See https://github.com/OpenJBOD/software/issues/3
     FAN_FAILED = True
 
-
 def power_btn_handler(pin):
-    # This is not a real debounce. It's a workaround.
-    power_btn.irq(handler=None)
     if psu.state():
         psu.off()
     else:
         psu.on()
-    time.sleep(1)
-    power_btn.irq(handler=power_btn_handler)
+    power_btn.irq(handler=power_debounce)
+
+pwr_timer = Timer()
+def power_debounce(pin):
+    power_btn.irq(handler=None)
+    pwr_timer.init(mode=Timer.ONE_SHOT, period=200, callback=power_btn_handler)
 
 
 # CHECK THESE FOR REV4
@@ -113,7 +114,7 @@ psu_set = Pin(14, Pin.OUT)
 psu_sense = Pin(15, Pin.IN)
 usb_sense = Pin(25, Pin.IN)
 # Interrupts
-power_btn.irq(trigger=Pin.IRQ_FALLING, handler=power_btn_handler)
+power_btn.irq(trigger=Pin.IRQ_FALLING, handler=power_debounce)
 fan_fail.irq(trigger=Pin.IRQ_FALLING, handler=fan_fail_handler)
 
 psu = helpers.SRLatch(psu_set, psu_reset, psu_sense)
