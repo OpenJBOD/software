@@ -1,17 +1,14 @@
-from machine import Pin, I2C, SPI, ADC, UART, Timer
-from time import sleep
-from emc2301.emc2301 import EMC2301
 import helpers
 import network
-import time
 import os
-import _thread
 import onewire, ds18x20
+import time
+from emc2301.emc2301 import EMC2301
+from machine import Pin, I2C, SPI, ADC, UART, Timer
 from microdot import Microdot, Response, send_file, redirect
 from microdot.utemplate import Template
 from microdot.session import Session, with_session
 from microdot.auth import BasicAuth
-import sys
 
 # Start UART during boot process.
 # Default settings:
@@ -170,7 +167,7 @@ def w5500_init(spi):
         dns = CONFIG["network"]["dns"]
         nic.ifconfig((ip_addr, subnet_mask, gateway, dns))
     while not nic.isconnected():
-        sleep(1)
+        time.sleep(1)
         print("[INIT] Not connected to NIC, waiting for IP...")
         led.toggle()
     led.on()
