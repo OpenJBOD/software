@@ -94,6 +94,12 @@ def get_rp2040_temp():
 
 def get_ds18x20_temp(ds_sensor, rom):
     ds_sensor.convert_temp()
+    # The DS18B20 starts by default in 12-bit resolution mode.
+    # According to the datasheet, this means a max temp read time of 750ms.
+    # This is obviously farm ore than we'd like to delay the page for
+    # but MicroPython's driver does not support changing the resolution.
+    # If the device has just been powered on, the initial reading is likely 85
+    # c as this is the default temperature.
     time.sleep_ms(250)
 
     return ds_sensor.read_temp(rom)
