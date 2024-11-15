@@ -405,4 +405,7 @@ def webserver():
     app.run(port=80, debug=True)
 
 
-webserver()
+try:
+    webserver()
+except KeyboardInterrupt:
+    temp_monitor_timer.deinit()
