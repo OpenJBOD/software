@@ -135,6 +135,9 @@ if len(ds_roms) == 0:
     CONFIG["monitoring"]["use_ds18x20"] = False
 else:
     ds_rom = ds_roms[0]
+    # Set temperature resolution to 9 bits.
+    config = b'\x00\x00\x1f'
+    ds_sensor.write_scratch(ds_rom, config)
 
 
 def temp_monitor():
