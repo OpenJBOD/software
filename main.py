@@ -153,7 +153,7 @@ def temp_monitor():
 
 temp_monitor_timer = Timer()
 temp_monitor_timer.init(
-    mode=Timer.PERIODIC, freq=0.05, callback=lambda t: temp_monitor()
+    mode=Timer.PERIODIC, period=500, callback=lambda t: temp_monitor()
 )
 
 
