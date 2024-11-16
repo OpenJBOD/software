@@ -77,6 +77,14 @@ if CONFIG.get("web").get("use_tls") is not None:
     del CONFIG["web"]["use_tls"]
     helpers.write_config(CONFIG)
 
+# Set up fan curve.
+FAN_TEMPS = []
+FAN_SPEEDS = []
+for i in CONFIG['fan_curve']:
+    FAN_TEMPS.append(CONFIG['fan_curve'][i]['temp'])
+    FAN_SPEEDS.append(CONFIG['fan_curve'][i]['fan_p'])
+FAN_TEMPS.sort()
+FAN_SPEEDS.sort()
 
 def fan_fail_handler(pin):
     # TODO: See https://github.com/OpenJBOD/software/issues/3
@@ -146,7 +154,7 @@ def temp_monitor():
             temp = helpers.get_ds18x20_temp(ds_sensor, ds_rom)
         else:
             temp = helpers.get_rp2040_temp()
-        fan_p = helpers.check_temp(temp, CONFIG["fan_curve"])
+        fan_p = int(helpers.linear_interpolation(FAN_TEMPS, FAN_SPEEDS, temp))
         duty_cycle = helpers.percent_to_duty(fan_p)
         emc2301.set_pwm_duty_cycle(duty_cycle)
 

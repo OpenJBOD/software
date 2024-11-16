@@ -109,6 +109,20 @@ def check_temp(temp, fan_curve):
             break
     return fan_speed
 
+def linear_interpolation(x_values, y_values, x):
+    if len(x_values) != 5 or len(y_values) != 5:
+        raise ValueError("x_values and y_values must each contain exactly five elements.")
+    if sorted(x_values) != x_values:
+        raise ValueError("x_values must be sorted in ascending order.")
+    
+    for i in range(4):
+        if x_values[i] <= x <= x_values[i + 1]:
+            x1, x2 = x_values[i], x_values[i + 1]
+            y1, y2 = y_values[i], y_values[i + 1]
+            y = y1 + (y2 - y1) * (x - x1) / (x2 - x1)
+            return y
+    
+    raise ValueError("x is out of the range of the provided x_values.")
 
 def get_network_info(ifconfig):
     # Store the W5500 ifconfig tuple in a more readable format.
