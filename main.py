@@ -71,6 +71,13 @@ except OSError:
     helpers.write_config(DEFAULT_CONFIG)
     CONFIG = helpers.read_config()
 
+# Remove generated template files as otherwise these will
+# be rendered even if they are no longer accurate to the HTML
+for i in os.ilistdir("templates"):
+    (name, entry_type, inode, size) = i
+    if '_html.py' in name:
+        os.remove(f"templates/{name}")
+
 # SSL has been removed.
 # Removing deprecated option from config if present.
 if CONFIG.get("web").get("use_tls") is not None:
