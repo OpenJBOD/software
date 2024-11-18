@@ -173,7 +173,7 @@ else:
 
 
 def temp_monitor():
-    if psu_sense.value() and not CONFIG["monitoring"]["use_ext_fan_ctrl"]:
+    if not CONFIG["monitoring"]["use_ext_fan_ctrl"]:
         if CONFIG["monitoring"]["use_ds18x20"]:
             temp = helpers.get_ds18x20_temp(ds_sensor, ds_rom)
         else:
