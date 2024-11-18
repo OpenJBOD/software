@@ -142,8 +142,9 @@ usb_sense = Pin(25, Pin.IN)
 # Interrupts
 power_btn.irq(trigger=Pin.IRQ_FALLING, handler=power_debounce)
 fan_fail.irq(trigger=Pin.IRQ_FALLING, handler=fan_fail_handler)
-usb_sense.irq(trigger=Pin.IRQ_RISING, handler=usb_pin_check)
-usb_sense.irq(trigger=Pin.IRQ_FALLING, handler=usb_pin_check)
+if CONFIG['power']['follow_usb']:
+    usb_sense.irq(trigger=Pin.IRQ_RISING, handler=usb_pin_check)
+    usb_sense.irq(trigger=Pin.IRQ_FALLING, handler=usb_pin_check)
 
 psu = helpers.SRLatch(psu_set, psu_reset, psu_sense)
 
