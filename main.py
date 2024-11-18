@@ -86,6 +86,20 @@ for i in CONFIG['fan_curve']:
 FAN_TEMPS.sort()
 FAN_SPEEDS.sort()
 
+def usb_pin_check(pin):
+    pin.irq(handler=None)
+    print("Triggered usb_pin_check")
+    if CONFIG['power']['follow_usb_delay']:
+        time.sleep(CONFIG['power']['follow_usb_delay'])
+    time.sleep(1)
+    if pin.value():
+        psu.on()
+        print("Turning on")
+    else:
+        psu.off()
+        print("Turning off")
+    pin.irq(handler=usb_pin_check)
+
 def fan_fail_handler(pin):
     # TODO: See https://github.com/OpenJBOD/software/issues/3
     FAN_FAILED = True
@@ -121,6 +135,8 @@ usb_sense = Pin(25, Pin.IN)
 # Interrupts
 power_btn.irq(trigger=Pin.IRQ_FALLING, handler=power_debounce)
 fan_fail.irq(trigger=Pin.IRQ_FALLING, handler=fan_fail_handler)
+usb_sense.irq(trigger=Pin.IRQ_RISING, handler=usb_pin_check)
+usb_sense.irq(trigger=Pin.IRQ_FALLING, handler=usb_pin_check)
 
 psu = helpers.SRLatch(psu_set, psu_reset, psu_sense)
 
