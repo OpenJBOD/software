@@ -75,7 +75,7 @@ except OSError:
 # be rendered even if they are no longer accurate to the HTML
 for i in os.ilistdir("templates"):
     (name, entry_type, inode, size) = i
-    if '_html.py' in name:
+    if "_html.py" in name:
         os.remove(f"templates/{name}")
 
 # SSL has been removed.
@@ -87,17 +87,18 @@ if CONFIG.get("web").get("use_tls") is not None:
 # Set up fan curve.
 FAN_TEMPS = []
 FAN_SPEEDS = []
-for i in CONFIG['fan_curve']:
-    FAN_TEMPS.append(CONFIG['fan_curve'][i]['temp'])
-    FAN_SPEEDS.append(CONFIG['fan_curve'][i]['fan_p'])
+for i in CONFIG["fan_curve"]:
+    FAN_TEMPS.append(CONFIG["fan_curve"][i]["temp"])
+    FAN_SPEEDS.append(CONFIG["fan_curve"][i]["fan_p"])
 FAN_TEMPS.sort()
 FAN_SPEEDS.sort()
+
 
 def usb_pin_check(pin):
     pin.irq(handler=None)
     print("Triggered usb_pin_check")
-    if CONFIG['power']['follow_usb_delay']:
-        time.sleep(CONFIG['power']['follow_usb_delay'])
+    if CONFIG["power"]["follow_usb_delay"]:
+        time.sleep(CONFIG["power"]["follow_usb_delay"])
     time.sleep(1)
     if pin.value():
         psu.on()
@@ -107,9 +108,11 @@ def usb_pin_check(pin):
         print("Turning off")
     pin.irq(handler=usb_pin_check)
 
+
 def fan_fail_handler(pin):
     # TODO: See https://github.com/OpenJBOD/software/issues/3
     FAN_FAILED = True
+
 
 def power_btn_handler(pin):
     if psu.state():
@@ -118,7 +121,10 @@ def power_btn_handler(pin):
         psu.on()
     power_btn.irq(handler=power_debounce)
 
+
 pwr_timer = Timer()
+
+
 def power_debounce(pin):
     power_btn.irq(handler=None)
     pwr_timer.init(mode=Timer.ONE_SHOT, period=200, callback=power_btn_handler)
@@ -142,7 +148,7 @@ usb_sense = Pin(25, Pin.IN)
 # Interrupts
 power_btn.irq(trigger=Pin.IRQ_FALLING, handler=power_debounce)
 fan_fail.irq(trigger=Pin.IRQ_FALLING, handler=fan_fail_handler)
-if CONFIG['power']['follow_usb']:
+if CONFIG["power"]["follow_usb"]:
     usb_sense.irq(trigger=Pin.IRQ_RISING, handler=usb_pin_check)
     usb_sense.irq(trigger=Pin.IRQ_FALLING, handler=usb_pin_check)
 
@@ -168,7 +174,7 @@ if len(ds_roms) == 0:
 else:
     ds_rom = ds_roms[0]
     # Set temperature resolution to 9 bits.
-    config = b'\x00\x00\x1f'
+    config = b"\x00\x00\x1f"
     ds_sensor.write_scratch(ds_rom, config)
 
 
