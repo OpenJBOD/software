@@ -9,8 +9,12 @@
                 <input name="ignore_power_switch" id="ignore_power_switch" type=checkbox {% if config['power']['ignore_power_switch'] %}checked{% endif %} value=True>
               </div>
               <div class="pure-control-group">
-                <label for="on_boot" class=pure-checkbox>Turn on ATX on Boot</label>
-                <input name="on_boot" id="on_boot" type=checkbox {% if config['power']['on_boot'] %}checked{% endif %} value=True>
+                <label for="on_power_restore">On Power Restore</label>
+                <select name="on_power_restore" id="on_power_restore">
+                  <option value="power_off" {% if config['power'].get('on_power_restore', 'power_off') == 'power_off' %}selected{% endif %}>Power Off</option>
+                  <option value="power_on" {% if config['power'].get('on_power_restore', 'power_off') == 'power_on' %}selected{% endif %}>Power On</option>
+                  <option value="last_state" {% if config['power'].get('on_power_restore', 'power_off') == 'last_state' %}selected{% endif %}>Last State</option>
+                </select>
               </div>
               <div class="pure-control-group">
                 <label for="on_boot_delay">Boot Delay</label>
@@ -33,7 +37,7 @@
           <h1 class="content-subhead">Legend</h1>
           <fieldset>
             <p><b>Ignore Power Switch</b> - This causes the controller to ignore the power button input.</p>
-            <p><b>Turn on ATX on Boot</b> - The controller will start the power supply as part of the boot process. This is mutually exclusive with <b>Follow USB Power</b></b></p>
+            <p><b>On Power Restore</b> - When AC power is applied the controller will automatically power the system on, off, or in the last state recorded. This is mutually exclusive with <b>Follow USB Power</b></b></p>
             <p><b>Boot Delay</b> - This is a timer in seconds that will elapse before the power supply is turned on.</p>
             <p><b>Follow USB Power</b> - The controller will start and stop the ATX power supply when it receives or stops receiving voltage from the microUSB port. This is mutually exclusive with <b>Turn on ATX on Boot</b></p>
             <p><b>Boot Delay</b> - This is a timer in seconds that will elapse before the power supply is turned on.</p>

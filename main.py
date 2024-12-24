@@ -17,6 +17,12 @@ uart0 = UART(0)
 uart0.init(tx=16, rx=17)
 os.dupterm(uart0)
 
+psu_set = Pin(14, Pin.OUT)
+psu_sense = Pin(15, Pin.IN)
+psu_reset = Pin(13, Pin.OUT)
+psu = helpers.SRLatch(psu_set, psu_reset, psu_sense, name="psu")
+
+
 VERSION = "1.2.0"
 DEFAULT_CONFIG = {
     "network": {
@@ -28,11 +34,11 @@ DEFAULT_CONFIG = {
         "dns": "",
     },
     "power": {
-        "on_boot": False,
         "on_boot_delay": 0,
         "follow_usb": False,
         "follow_usb_delay": 0,
         "ignore_power_switch": False,
+        "on_power_restore": "power_on",
     },
     "monitoring": {
         "use_ds18x20": True,
@@ -70,6 +76,20 @@ except OSError:
     print("[INIT] Config not found, writing and assuming defaults!")
     helpers.write_config(DEFAULT_CONFIG)
     CONFIG = helpers.read_config()
+
+
+if CONFIG["power"].get("on_power_restore", "power_off") == "power_on":
+    if not psu.state():
+        time.sleep(CONFIG["power"]["on_boot_delay"])
+        psu.on()
+elif CONFIG["power"].get("on_power_restore", "power_off") == "power_off":
+    psu.off()
+elif CONFIG["power"].get("on_power_restore", "power_off") == "last_state":
+    if psu.stored_state():
+        time.sleep(CONFIG["power"]["on_boot_delay"])
+        psu.on(store=False)
+    else:
+        psu.off(store=False)
 
 # Remove generated template files as otherwise these will
 # be rendered even if they are no longer accurate to the HTML
@@ -141,9 +161,6 @@ if CONFIG["monitoring"]["use_ext_probe"]:
 led = Pin(6, Pin.OUT)
 fan_fail = Pin(10, Pin.IN, Pin.PULL_UP)
 power_btn = Pin(12, Pin.IN, Pin.PULL_UP)
-psu_reset = Pin(13, Pin.OUT)
-psu_set = Pin(14, Pin.OUT)
-psu_sense = Pin(15, Pin.IN)
 usb_sense = Pin(25, Pin.IN)
 # Interrupts
 power_btn.irq(trigger=Pin.IRQ_FALLING, handler=power_debounce)
@@ -151,13 +168,6 @@ fan_fail.irq(trigger=Pin.IRQ_FALLING, handler=fan_fail_handler)
 if CONFIG["power"]["follow_usb"]:
     usb_sense.irq(trigger=Pin.IRQ_RISING, handler=usb_pin_check)
     usb_sense.irq(trigger=Pin.IRQ_FALLING, handler=usb_pin_check)
-
-psu = helpers.SRLatch(psu_set, psu_reset, psu_sense)
-
-if CONFIG["power"]["on_boot"]:
-    time.sleep(CONFIG["power"]["on_boot_delay"])
-    if not psu.state():
-        psu.on()
 
 led.on()
 emc2301 = EMC2301(i2c)
@@ -290,10 +300,7 @@ def webserver():
     @auth
     async def settings_power(req):
         if req.method == "POST":
-            if req.form.get("on_boot"):
-                CONFIG["power"]["on_boot"] = True
-            else:
-                CONFIG["power"]["on_boot"] = False
+            CONFIG["power"]["on_power_restore"] = req.form["on_power_restore"]
             CONFIG["power"]["on_boot_delay"] = int(req.form["on_boot_delay"])
             if req.form.get("follow_usb"):
                 CONFIG["power"]["follow_usb"] = True
