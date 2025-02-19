@@ -18,8 +18,7 @@
           <b>Use External Fan Controller</b>
         </div>
         <div class="grid-2">
-          <input type="checkbox" name="use_ext_fan_ctrl" {% if config['monitoring']['use_ext_fan_ctrl'] %}checked{%
-            endif %} value=True />
+          <input type="checkbox" name="use_ext_fan_ctrl" {% if config['monitoring']['use_ext_fan_ctrl'] %}checked{% endif %} value=True />
         </div>
       </div>
       <div class="row">
@@ -27,8 +26,7 @@
           <b>Ignore Fan Failures</b>
         </div>
         <div class="grid-2">
-          <input type="checkbox" name="ignore_fan_fail" {% if config['monitoring']['ignore_fan_fail'] %}checked{% endif
-            %} value=True />
+          <input type="checkbox" name="ignore_fan_fail" {% if config['monitoring']['ignore_fan_fail'] %}checked{% endif %} value=True />
         </div>
       </div>
       <div class="row">
@@ -93,7 +91,7 @@
         </div>
         <div class="grid-3">
           <input type="integer" placeholder="Fan Percent" name="curve_5_p"
-            value="{{ config['fan_curve']['51']['fan_p'] }}" />
+            value="{{ config['fan_curve']['5']['fan_p'] }}" />
         </div>
       </div>
       <hr />
