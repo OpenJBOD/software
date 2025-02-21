@@ -2,6 +2,7 @@
 OpenJBOD Helper Functions
 """
 
+import os
 import json
 import machine
 import time
@@ -9,11 +10,39 @@ import binascii
 from hashlib import sha1
 
 CONFIG_FILE = "config.json"
+STATE_FILE = "state.json"
+STATE = {}
+
+
+def read_state():
+    with open(STATE_FILE, "r") as f:
+        return json.load(f)
+
+
+def write_state(state):
+    with open(STATE_FILE, "w") as f:
+        json.dump(state, f)
+
+    return "State written!"
+
+
+try:
+    os.stat(STATE_FILE)
+    print("[INIT] Reading state from file.")
+    STATE = read_state()
+except OSError:
+    print("[INIT] State not found, writing and assuming defaults!")
+    write_state(STATE)
+    STATE = read_state()
 
 
 class SRLatch:
     def __init__(
-        self, set_pin: machine.Pin, reset_pin: machine.Pin, sense_pin: machine.Pin
+        self,
+        set_pin: machine.Pin,
+        reset_pin: machine.Pin,
+        sense_pin: machine.Pin,
+        name: str = None,
     ):
         if (
             not isinstance(set_pin, machine.Pin)
@@ -25,21 +54,34 @@ class SRLatch:
         self.set_pin = set_pin
         self.reset_pin = reset_pin
         self.sense_pin = sense_pin
+        self.name = name
 
-    def on(self):
+    def on(self, store=True):
         self.reset_pin.off()
         self.set_pin.on()
         time.sleep_ms(250)
         self.set_pin.off()
+        if self.name and store:
+            STATE[f"{self.name}_srlatch_state"] = True
+            write_state(STATE)
 
-    def off(self):
+    def off(self, store=True):
         self.set_pin.off()
         self.reset_pin.on()
         time.sleep_ms(250)
         self.reset_pin.off()
+        if self.name and store:
+            STATE[f"{self.name}_srlatch_state"] = False
+            write_state(STATE)
 
     def state(self):
         if self.sense_pin.value():
+            return True
+        else:
+            return False
+
+    def stored_state(self):
+        if self.name and STATE.get(f"{self.name}_srlatch_state", False):
             return True
         else:
             return False
@@ -109,20 +151,24 @@ def check_temp(temp, fan_curve):
             break
     return fan_speed
 
+
 def linear_interpolation(x_values, y_values, x):
     if len(x_values) != 5 or len(y_values) != 5:
-        raise ValueError("x_values and y_values must each contain exactly five elements.")
+        raise ValueError(
+            "x_values and y_values must each contain exactly five elements."
+        )
     if sorted(x_values) != x_values:
         raise ValueError("x_values must be sorted in ascending order.")
-    
+
     for i in range(4):
         if x_values[i] <= x <= x_values[i + 1]:
             x1, x2 = x_values[i], x_values[i + 1]
             y1, y2 = y_values[i], y_values[i + 1]
             y = y1 + (y2 - y1) * (x - x1) / (x2 - x1)
             return y
-    
+
     raise ValueError("x is out of the range of the provided x_values.")
+
 
 def get_network_info(ifconfig):
     # Store the W5500 ifconfig tuple in a more readable format.

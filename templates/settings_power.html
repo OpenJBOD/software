@@ -14,10 +14,15 @@
       </div>
       <div class="row">
         <div class="grid-2">
-          <b>Turn on ATX on Boot</b>
+          <b>On Power Restore</b>
         </div>
         <div class="grid-2">
-          <input type="checkbox" name="on_boot" {% if config['power']['on_boot'] %}checked{% endif %} value=True />
+          <select name="on_power_restore" id="on_power_restore">
+            <option value="power_off" {% if config['power'].get('on_power_restore', 'hardware_control') == 'power_off' %}selected{% endif %}>Power Off</option>
+            <option value="power_on" {% if config['power'].get('on_power_restore', 'hardware_control') == 'power_on' %}selected{% endif %}>Power On</option>
+            <option value="last_state" {% if config['power'].get('on_power_restore', 'hardware_control') == 'last_state' %}selected{% endif %}>Last State</option>
+            <option value="hardware_control" {% if config['power'].get('on_power_restore', 'hardware_control') == 'hardware_control' %}selected{% endif %}>Hardware Control</option>
+          </select>
         </div>
       </div>
       <div class="row">
@@ -55,8 +60,8 @@
     <p class="heading">Legend</p>
     <fieldset>
       <p><b>Ignore Power Switch</b> - This causes the controller to ignore the power button input.</p>
-      <p><b>Turn on ATX on Boot</b> - The controller will start the power supply as part of the boot process. This is
-        mutually exclusive with <b>Follow USB Power</b></b></p>
+      <p><b>On Power Restore</b> - When AC power is applied the controller will automatically power the system on, off, or in the last state recorded.
+        Hardware Control will not alter the state via software. This is mutually exclusive with <b>Follow USB Power</b></b></p>
       <p><b>Boot Delay</b> - This is a timer in seconds that will elapse before the power supply is turned on.</p>
       <p><b>Follow USB Power</b> - The controller will start and stop the ATX power supply when it receives or stops
         receiving voltage from the microUSB port. This is mutually exclusive with <b>Turn on ATX on Boot</b></p>

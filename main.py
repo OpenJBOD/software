@@ -17,6 +17,12 @@ uart0 = UART(0)
 uart0.init(tx=16, rx=17)
 os.dupterm(uart0)
 
+# Define PSU latch early to use in on-boot checks.
+psu_set = Pin(14, Pin.OUT)
+psu_sense = Pin(15, Pin.IN)
+psu_reset = Pin(13, Pin.OUT)
+psu = helpers.SRLatch(psu_set, psu_reset, psu_sense, name="psu")
+
 VERSION = "1.3.0-DEV"
 DEFAULT_CONFIG = {
     "network": {
@@ -28,11 +34,11 @@ DEFAULT_CONFIG = {
         "dns": "",
     },
     "power": {
-        "on_boot": False,
         "on_boot_delay": 0,
         "follow_usb": False,
         "follow_usb_delay": 0,
         "ignore_power_switch": False,
+        "on_power_restore": "hardware_control",
     },
     "monitoring": {
         "use_ds18x20": True,
@@ -71,11 +77,25 @@ except OSError:
     helpers.write_config(DEFAULT_CONFIG)
     CONFIG = helpers.read_config()
 
+
+if CONFIG["power"].get("on_power_restore", "hardware_control") == "power_on":
+    if not psu.state():
+        time.sleep(CONFIG["power"]["on_boot_delay"])
+        psu.on()
+elif CONFIG["power"].get("on_power_restore", "hardware_control") == "power_off":
+    psu.off()
+elif CONFIG["power"].get("on_power_restore", "hardware_control") == "last_state":
+    if psu.stored_state():
+        time.sleep(CONFIG["power"]["on_boot_delay"])
+        psu.on(store=False)
+    else:
+        psu.off(store=False)
+
 # Remove generated template files as otherwise these will
 # be rendered even if they are no longer accurate to the HTML
 for i in os.ilistdir("templates"):
     (name, entry_type, inode, size) = i
-    if '_html.py' in name:
+    if "_html.py" in name:
         os.remove(f"templates/{name}")
 
 # SSL has been removed.
@@ -87,17 +107,18 @@ if CONFIG.get("web").get("use_tls") is not None:
 # Set up fan curve.
 FAN_TEMPS = []
 FAN_SPEEDS = []
-for i in CONFIG['fan_curve']:
-    FAN_TEMPS.append(CONFIG['fan_curve'][i]['temp'])
-    FAN_SPEEDS.append(CONFIG['fan_curve'][i]['fan_p'])
+for i in CONFIG["fan_curve"]:
+    FAN_TEMPS.append(CONFIG["fan_curve"][i]["temp"])
+    FAN_SPEEDS.append(CONFIG["fan_curve"][i]["fan_p"])
 FAN_TEMPS.sort()
 FAN_SPEEDS.sort()
+
 
 def usb_pin_check(pin):
     pin.irq(handler=None)
     print("Triggered usb_pin_check")
-    if CONFIG['power']['follow_usb_delay']:
-        time.sleep(CONFIG['power']['follow_usb_delay'])
+    if CONFIG["power"]["follow_usb_delay"]:
+        time.sleep(CONFIG["power"]["follow_usb_delay"])
     time.sleep(1)
     if pin.value():
         psu.on()
@@ -107,9 +128,11 @@ def usb_pin_check(pin):
         print("Turning off")
     pin.irq(handler=usb_pin_check)
 
+
 def fan_fail_handler(pin):
     # TODO: See https://github.com/OpenJBOD/software/issues/3
     FAN_FAILED = True
+
 
 def power_btn_handler(pin):
     if psu.state():
@@ -118,7 +141,10 @@ def power_btn_handler(pin):
         psu.on()
     power_btn.irq(handler=power_debounce)
 
+
 pwr_timer = Timer()
+
+
 def power_debounce(pin):
     power_btn.irq(handler=None)
     pwr_timer.init(mode=Timer.ONE_SHOT, period=200, callback=power_btn_handler)
@@ -133,23 +159,13 @@ if CONFIG["monitoring"]["use_ext_probe"]:
 led = Pin(6, Pin.OUT)
 fan_fail = Pin(10, Pin.IN, Pin.PULL_UP)
 power_btn = Pin(12, Pin.IN, Pin.PULL_UP)
-psu_reset = Pin(13, Pin.OUT)
-psu_set = Pin(14, Pin.OUT)
-psu_sense = Pin(15, Pin.IN)
 usb_sense = Pin(25, Pin.IN)
 # Interrupts
 power_btn.irq(trigger=Pin.IRQ_FALLING, handler=power_debounce)
 fan_fail.irq(trigger=Pin.IRQ_FALLING, handler=fan_fail_handler)
-if CONFIG['power']['follow_usb']:
+if CONFIG["power"]["follow_usb"]:
     usb_sense.irq(trigger=Pin.IRQ_RISING, handler=usb_pin_check)
     usb_sense.irq(trigger=Pin.IRQ_FALLING, handler=usb_pin_check)
-
-psu = helpers.SRLatch(psu_set, psu_reset, psu_sense)
-
-if CONFIG["power"]["on_boot"]:
-    time.sleep(CONFIG["power"]["on_boot_delay"])
-    if not psu.state():
-        psu.on()
 
 led.on()
 emc2301 = EMC2301(i2c)
@@ -166,7 +182,7 @@ if len(ds_roms) == 0:
 else:
     ds_rom = ds_roms[0]
     # Set temperature resolution to 9 bits.
-    config = b'\x00\x00\x1f'
+    config = b"\x00\x00\x1f"
     ds_sensor.write_scratch(ds_rom, config)
 
 
@@ -282,10 +298,7 @@ def webserver():
     @auth
     async def settings_power(req):
         if req.method == "POST":
-            if req.form.get("on_boot"):
-                CONFIG["power"]["on_boot"] = True
-            else:
-                CONFIG["power"]["on_boot"] = False
+            CONFIG["power"]["on_power_restore"] = req.form["on_power_restore"]
             CONFIG["power"]["on_boot_delay"] = int(req.form["on_boot_delay"])
             if req.form.get("follow_usb"):
                 CONFIG["power"]["follow_usb"] = True
