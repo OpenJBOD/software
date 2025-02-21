@@ -17,13 +17,13 @@ uart0 = UART(0)
 uart0.init(tx=16, rx=17)
 os.dupterm(uart0)
 
+# Define PSU latch early to use in on-boot checks.
 psu_set = Pin(14, Pin.OUT)
 psu_sense = Pin(15, Pin.IN)
 psu_reset = Pin(13, Pin.OUT)
 psu = helpers.SRLatch(psu_set, psu_reset, psu_sense, name="psu")
 
-
-VERSION = "1.2.0"
+VERSION = "1.3.0-DEV"
 DEFAULT_CONFIG = {
     "network": {
         "hostname": "openjbod",
@@ -149,8 +149,6 @@ def power_debounce(pin):
     power_btn.irq(handler=None)
     pwr_timer.init(mode=Timer.ONE_SHOT, period=200, callback=power_btn_handler)
 
-
-# CHECK THESE FOR REV4
 # Busses
 i2c = I2C(0, scl=Pin(9), sda=Pin(8), freq=100000)
 spi = SPI(0, 2000000, mosi=Pin(3), miso=Pin(4), sck=Pin(2))

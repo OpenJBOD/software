@@ -1,51 +1,81 @@
 {% args config %}
 {% include "header.html" %}
-        <div class="pure-u-1-3">
-          <h1 class="content-subhead">Networking</h1>
-          <fieldset>
-            <form class="pure-form pure-form-aligned" action="" method="POST">
-              <div class="pure-control-group">
-                <label for=hostname>Hostname:</label>
-                <input placeholder=Hostname id=hostname name=hostname value="{{ config['network']['hostname'] }}" />
-              </div>
-              <div class="pure-control-group">
-                <label for=ip_dhcp class=pure-radio>
-                  <input id=ip_dhcp type=radio value=dhcp name=ip_method {% if config['network']['method'] == 'dhcp' %}checked{% endif %}> DHCP
-                </label>
-                <label for=ip_static class=pure-radio>
-                  <input id=ip_static type=radio value=static name=ip_method {% if config['network']['method'] == 'static' %}checked{% endif %}> Static
-                </label>
-              </div>
-              <div class="pure-control-group">
-                <label for=ip_address>IP Address</label>
-                <input placeholder="IP Address"id=ip_address name=ip_address value="{{ config['network']['ip'] }}">
-              </div>
-              <div class="pure-control-group">
-                <label for=subnet_mask>Subnet Mask</label>
-                <input placeholder="Subnet Mask" id="subnet_mask" name="subnet_mask" value="{{ config['network']['subnet_mask'] }}">
-              </div>
-              <div class="pure-control-group">
-                <label for="gateway_ip">Gateway</label>
-                <input placeholder="Gateway IP" name="gateway_ip" value="{{ config['network']['gateway'] }}">
-              </div>
-              <div class="pure-control-group">
-                <label for="dns_ip">DNS</label>
-                <input placeholder="DNS Server" id="dns_ip" name="dns_ip" value="{{ config['network']['dns'] }}">
-              </div>
-              <button class="pure-button pure-button-primary"type=submit>Save</button>
-              <p><b>Note:</b> After saving the settings, the device will need to restart to apply them. The board can be restarted on the <a href="/settings/reset">Reset page</a>.</p>
-            </form>
-          </fieldset>
+<div class="row">
+  <div class="grid-2">
+    <p class="heading">Settings - Network</p>
+    <form action="" method="POST">
+      <div class="row">
+        <div class="grid-2">
+          <b>Hostname</b>
         </div>
-        <div class="pure-u-1-3">
-          <h1 class="content-subhead">Legend</h1>
-          <fieldset>
-            <p><b>Hostname</b> - This option currently has no effect. <a href="https://github.com/OpenJBOD/software/issues/2">Please see this issue</a>.</p>
-            <p><b>IP Method</b> - Decides whether to use DHCP or static IP addressing. Addresses input while the controller is in DHCP mode will still be saved, but not used.</p>
-            <p><b>IP Address</b> - IPv4 Address of the device, only used with the static option above.</p>
-            <p><b>Subnet Mask</b> - IPv4 subnet mask of the device, only used with the static option above.</p>
-            <p><b>Gateway</b> - IPv4 gateway of the device, only used with the static option above.</p>
-            <p><b>DNS</b> - IPv4 DNS IP for the device, only used with the static option above.</p>
-          </fieldset>
+        <div class="grid-2">
+          <input type="text" name="hostname" placeholder="Hostname" value="{{ config['network']['hostname'] }}" />
         </div>
+      </div>
+      <div class="row">
+        <div class="grid-3">
+          <b>IP Configuration</b>
+        </div>
+        <div class="grid-3">
+          <label for="ip_dhcp">
+            <input id="ip_dhcp" type="radio" value="dhcp" name="ip_method" {% if config['network']['method']=='dhcp' %}checked{% endif %} /> DHCP
+          </label>
+        </div>
+        <div class="grid-3">
+          <label for="ip_dhcp">
+            <input id="ip_static" type="radio" value="static" name="ip_method" {% if config['network']['method']=='static' %}checked{% endif %} /> Static
+          </label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="grid-2">
+          <b>IP Address</b>
+        </div>
+        <div class="grid-2">
+          <input type="text" name="ip_address" placeholder="IP Address" value="{{ config['network']['ip'] }}" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="grid-2">
+          <b>Subnet Mask</b>
+        </div>
+        <div class="grid-2">
+          <input type="text" name="subnet_mask" placeholder="Subnet Mask"
+            value="{{ config['network']['subnet_mask'] }}" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="grid-2">
+          <b>Gateway</b>
+        </div>
+        <div class="grid-2">
+          <input type="text" name="gateway_ip" placeholder="Gateway" value="{{ config['network']['gateway'] }}" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="grid-2">
+          <b>DNS Server</b>
+        </div>
+        <div class="grid-2">
+          <input type="text" name="dns_ip" placeholder="DNS Server" value="{{ config['network']['dns'] }}" />
+        </div>
+      </div>
+      <hr />
+      <button type="submit">Save</button>
+    </form>
+  </div>
+  <div class="grid-2">
+    <p class="heading">Legend</p>
+    <fieldset>
+      <p><b>Hostname</b> - This option currently has no effect. <a
+          href="https://github.com/OpenJBOD/software/issues/2">Please see this issue</a>.</p>
+      <p><b>IP Method</b> - Decides whether to use DHCP or static IP addressing. Addresses input while the controller is
+        in DHCP mode will still be saved, but not used.</p>
+      <p><b>IP Address</b> - IPv4 Address of the device, only used with the static option above.</p>
+      <p><b>Subnet Mask</b> - IPv4 subnet mask of the device, only used with the static option above.</p>
+      <p><b>Gateway</b> - IPv4 gateway of the device, only used with the static option above.</p>
+      <p><b>DNS</b> - IPv4 DNS IP for the device, only used with the static option above.</p>
+    </fieldset>
+  </div>
+</div>
 {% include "footer.html" %}

@@ -1,47 +1,72 @@
 {% args config %}
 {% include "header.html" %}
-        <div class="pure-u-1-3">
-          <h1 class="content-subhead">Power</h1>
-          <fieldset>
-            <form class="pure-form pure-form-aligned" action="" method="POST">
-              <div class="pure-control-group">
-                <label for="ignore_power_switch" class=pure-checkbox>Ignore Power Switch</label>
-                <input name="ignore_power_switch" id="ignore_power_switch" type=checkbox {% if config['power']['ignore_power_switch'] %}checked{% endif %} value=True>
-              </div>
-              <div class="pure-control-group">
-                <label for="on_power_restore">On Power Restore</label>
-                <select name="on_power_restore" id="on_power_restore">
-                  <option value="power_off" {% if config['power'].get('on_power_restore', 'hardware_control') == 'power_off' %}selected{% endif %}>Power Off</option>
-                  <option value="power_on" {% if config['power'].get('on_power_restore', 'hardware_control') == 'power_on' %}selected{% endif %}>Power On</option>
-                  <option value="last_state" {% if config['power'].get('on_power_restore', 'hardware_control') == 'last_state' %}selected{% endif %}>Last State</option>
-                  <option value="hardware_control" {% if config['power'].get('on_power_restore', 'hardware_control') == 'hardware_control' %}selected{% endif %}>Hardware Control</option>
-                </select>
-              </div>
-              <div class="pure-control-group">
-                <label for="on_boot_delay">Boot Delay</label>
-                <input placeholder="Boot Delay (Seconds)" name="on_boot_delay" id="on_boot_delay" type="number" value="{{ config['power']['on_boot_delay'] }}">
-              </div>
-              <div class="pure-control-group">
-                <label for="follow_usb" class=pure-checkbox>Follow USB Power</label>
-                <input name="follow_usb" id="follow_usb" type=checkbox {% if config['power']['follow_usb'] %}checked{% endif %} value=True>
-              </div>
-              <div class="pure-control-group">
-                <label for="follow_usb_delay">Follow Delay</label>
-                <input placeholder="Follow Delay (Seconds)" name="follow_usb_delay" id="follow_usb_delay" type="number" value="{{ config['power']['follow_usb_delay'] }}">
-              </div>
-              <button class="pure-button pure-button-primary"type=submit>Save</button>
-              <p><b>Note:</b> After saving the settings, the device will need to restart to apply them. The board can be restarted on the <a href="/settings/reset">Reset page</a>.</p>
-            </form>
-          </fieldset>
+<div class="row">
+  <div class="grid-2">
+    <p class="heading">Settings - Power</p>
+    <form action="" method="POST">
+      <div class="row">
+        <div class="grid-2">
+          <b>Ignore Power Switch</b>
         </div>
-        <div class="pure-u-1-3">
-          <h1 class="content-subhead">Legend</h1>
-          <fieldset>
-            <p><b>Ignore Power Switch</b> - This causes the controller to ignore the power button input.</p>
-            <p><b>On Power Restore</b> - When AC power is applied the controller will automatically power the system on, off, or in the last state recorded. Hardware Control will not alter the state via software. This is mutually exclusive with <b>Follow USB Power</b></b></p>
-            <p><b>Boot Delay</b> - This is a timer in seconds that will elapse before the power supply is turned on.</p>
-            <p><b>Follow USB Power</b> - The controller will start and stop the ATX power supply when it receives or stops receiving voltage from the microUSB port. This is mutually exclusive with <b>Turn on ATX on Boot</b></p>
-            <p><b>Boot Delay</b> - This is a timer in seconds that will elapse before the power supply is turned on.</p>
-          </fieldset>
+        <div class="grid-2">
+          <input type="checkbox" name="ignore_power_switch" {% if config['power']['ignore_power_switch'] %}checked{% endif %} value=True />
         </div>
+      </div>
+      <div class="row">
+        <div class="grid-2">
+          <b>On Power Restore</b>
+        </div>
+        <div class="grid-2">
+          <select name="on_power_restore" id="on_power_restore">
+            <option value="power_off" {% if config['power'].get('on_power_restore', 'hardware_control') == 'power_off' %}selected{% endif %}>Power Off</option>
+            <option value="power_on" {% if config['power'].get('on_power_restore', 'hardware_control') == 'power_on' %}selected{% endif %}>Power On</option>
+            <option value="last_state" {% if config['power'].get('on_power_restore', 'hardware_control') == 'last_state' %}selected{% endif %}>Last State</option>
+            <option value="hardware_control" {% if config['power'].get('on_power_restore', 'hardware_control') == 'hardware_control' %}selected{% endif %}>Hardware Control</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="grid-2">
+          <b>On Boot Delay</b>
+        </div>
+        <div class="grid-2">
+          <input placeholder="On Boot Delay (Seconds)" name="on_boot_delay" id="on_boot_delay" type="number"
+            value="{{ config['power']['on_boot_delay'] }}" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="grid-2">
+          <b>Follow USB Power</b>
+        </div>
+        <div class="grid-2">
+          <input type="checkbox" name="follow_usb" {% if config['power']['follow_usb'] %}checked{% endif %}
+            value=True />
+        </div>
+      </div>
+      <div class="row">
+        <div class="grid-2">
+          <b>Follow Delay</b>
+        </div>
+        <div class="grid-2">
+          <input placeholder="Follow Delay (Seconds)" name="follow_usb_delay" id="follow_usb_delay" type="number"
+            value="{{ config['power']['follow_usb_delay'] }}" />
+        </div>
+      </div>
+      <hr />
+      <button type="submit">Save</button>
+    </form>
+  </div>
+  <div class="grid-2">
+    <p class="heading">Legend</p>
+    <fieldset>
+      <p><b>Ignore Power Switch</b> - This causes the controller to ignore the power button input.</p>
+      <p><b>On Power Restore</b> - When AC power is applied the controller will automatically power the system on, off, or in the last state recorded.
+        Hardware Control will not alter the state via software. This is mutually exclusive with <b>Follow USB Power</b></b></p>
+      <p><b>Boot Delay</b> - This is a timer in seconds that will elapse before the power supply is turned on.</p>
+      <p><b>Follow USB Power</b> - The controller will start and stop the ATX power supply when it receives or stops
+        receiving voltage from the microUSB port. This is mutually exclusive with <b>Turn on ATX on Boot</b></p>
+      <p><b>Boot Delay</b> - This is a timer in seconds that will elapse before the power supply is turned on.</p>
+    </fieldset>
+  </div>
+</div>
 {% include "footer.html" %}
