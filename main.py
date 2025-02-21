@@ -38,7 +38,7 @@ DEFAULT_CONFIG = {
         "follow_usb": False,
         "follow_usb_delay": 0,
         "ignore_power_switch": False,
-        "on_power_restore": "power_on",
+        "on_power_restore": "hardware_control",
     },
     "monitoring": {
         "use_ds18x20": True,
@@ -78,13 +78,13 @@ except OSError:
     CONFIG = helpers.read_config()
 
 
-if CONFIG["power"].get("on_power_restore", "power_off") == "power_on":
+if CONFIG["power"].get("on_power_restore", "hardware_control") == "power_on":
     if not psu.state():
         time.sleep(CONFIG["power"]["on_boot_delay"])
         psu.on()
-elif CONFIG["power"].get("on_power_restore", "power_off") == "power_off":
+elif CONFIG["power"].get("on_power_restore", "hardware_control") == "power_off":
     psu.off()
-elif CONFIG["power"].get("on_power_restore", "power_off") == "last_state":
+elif CONFIG["power"].get("on_power_restore", "hardware_control") == "last_state":
     if psu.stored_state():
         time.sleep(CONFIG["power"]["on_boot_delay"])
         psu.on(store=False)
