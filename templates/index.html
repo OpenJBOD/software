@@ -78,8 +78,16 @@
     <p class="heading">Power Settings</p>
     <table>
       <tr>
-        <th>On Boot</th>
-        <td>{{ resp['config']['power']['on_boot'] }}</td>
+        <th>On Power Restore</th>
+        {% if resp['config']['power']['on_power_restore'] == 'hardware_control' %}
+        <td>Hardware Control</td>
+        {% elif resp['config']['power']['on_power_restore'] == 'last_state' %}
+        <td>Last State</td>
+        {% elif resp['config']['power']['on_power_restore'] == 'power_on' %}
+        <td>Power On</td>
+        {% elif resp['config']['power']['on_power_restore'] == 'power_off' %}
+        <td>Power Off</td>
+        {% endif %}
       </tr>
       <tr>
         <th>On Boot Delay (s)</th>
