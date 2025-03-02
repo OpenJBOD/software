@@ -112,12 +112,17 @@ for i in CONFIG["fan_curve"]:
 FAN_TEMPS.sort()
 FAN_SPEEDS.sort()
 
+usb_timer = Timer()
 
 def usb_pin_check(pin):
     pin.irq(handler=None)
     print("Triggered usb_pin_check")
     if CONFIG["power"]["follow_usb_delay"]:
-        time.sleep(CONFIG["power"]["follow_usb_delay"])
+        usb_timer.init(mode=Timer.ONE_SHOT, period=CONFIG["power"]["follow_usb_delay"] * 1000, callback=lambda t: usb_pin_action(pin))
+    else:
+        usb_pin_action(pin)
+
+def usb_pin_action(pin):
     time.sleep(1)
     if pin.value():
         psu.on()
@@ -142,7 +147,6 @@ def power_btn_handler(pin):
 
 
 pwr_timer = Timer()
-
 
 def power_debounce(pin):
     power_btn.irq(handler=None)
