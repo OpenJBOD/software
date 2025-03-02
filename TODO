@@ -1,3 +1,2 @@
 - Ensure new 'power state' default is added to older configs.
-- Reflect 'power state' configuration on the index page.
-- Investigate implementing web routes as sub-application: https://microdot.readthedocs.io/en/latest/intro.html#mounting-a-sub-application
+- Test API routes
