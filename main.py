@@ -5,7 +5,7 @@ import onewire, ds18x20
 import time
 from emc2301.emc2301 import EMC2301
 from machine import Pin, I2C, SPI, ADC, UART, Timer
-from microdot import Microdot
+from microdot import Microdot, Response
 from web_routes import setup_routes
 from api_routes import setup_api_routes
 
@@ -21,6 +21,18 @@ psu_set = Pin(14, Pin.OUT)
 psu_sense = Pin(15, Pin.IN)
 psu_reset = Pin(13, Pin.OUT)
 psu = helpers.SRLatch(psu_set, psu_reset, psu_sense, name="psu")
+
+# Defining i2c bus early to check for MACROM.
+i2c = I2C(0, scl=Pin(9), sda=Pin(8), freq=100000)
+MACROM_PRESENT = 80 in i2c.scan()
+if MACROM_PRESENT:
+    print("[INIT] Found MACROM!")
+    MACROM_MAC = helpers.read_eeprom_mac(i2c)
+    MACROM_STR = ":".join("{:02X}".format(b) for b in MACROM_MAC)
+    BOARD_REV = helpers.read_board_rev(i2c)
+else:
+    print("[INIT] No MACROM found, assuming Rev4.x board.")
+    BOARD_REV = "Rev 4"
 
 VERSION = "1.3.0-DEV"
 DEFAULT_CONFIG = {
@@ -114,13 +126,19 @@ FAN_SPEEDS.sort()
 
 usb_timer = Timer()
 
+
 def usb_pin_check(pin):
     pin.irq(handler=None)
     print("Triggered usb_pin_check")
     if CONFIG["power"]["follow_usb_delay"]:
-        usb_timer.init(mode=Timer.ONE_SHOT, period=CONFIG["power"]["follow_usb_delay"] * 1000, callback=lambda t: usb_pin_action(pin))
+        usb_timer.init(
+            mode=Timer.ONE_SHOT,
+            period=CONFIG["power"]["follow_usb_delay"] * 1000,
+            callback=lambda t: usb_pin_action(pin),
+        )
     else:
         usb_pin_action(pin)
+
 
 def usb_pin_action(pin):
     time.sleep(1)
@@ -148,12 +166,13 @@ def power_btn_handler(pin):
 
 pwr_timer = Timer()
 
+
 def power_debounce(pin):
     power_btn.irq(handler=None)
     pwr_timer.init(mode=Timer.ONE_SHOT, period=200, callback=power_btn_handler)
 
+
 # Busses
-i2c = I2C(0, scl=Pin(9), sda=Pin(8), freq=100000)
 spi = SPI(0, 2000000, mosi=Pin(3), miso=Pin(4), sck=Pin(2))
 onew = Pin(18)  # On-board probe.
 if CONFIG["monitoring"]["use_ext_probe"]:
@@ -212,6 +231,9 @@ def w5500_init(spi):
     # See https://github.com/OpenJBOD/software/issues/2
     network.hostname(CONFIG["network"]["hostname"])
     nic.active(True)
+    if MACROM_PRESENT:
+        print(f"[INIT] Using MAC from EEPROM: {MACROM_STR}")
+        nic.config(mac=bytes(MACROM_MAC))
     if CONFIG["network"]["method"] == "static":
         ip_addr = CONFIG["network"]["ip"]
         subnet_mask = CONFIG["network"]["subnet_mask"]
@@ -227,15 +249,48 @@ def w5500_init(spi):
 
 
 ifconfig = w5500_init(spi)
-MAC_ADDR = helpers.get_mac_address(spi, Pin(5))
+if MACROM_PRESENT:
+    MAC_ADDR = MACROM_STR
+else:
+    MAC_ADDR = helpers.get_mac_address(spi, Pin(5))
 print(ifconfig)
 
 
 def webserver():
     app = Microdot()
-    setup_routes(app, CONFIG, psu, emc2301, ds_sensor, ds_rom, FAN_TEMPS, FAN_SPEEDS, VERSION, MAC_ADDR, ifconfig)
-    setup_api_routes(app, CONFIG, emc2301, ds_sensor, ds_rom)
+
+    setup_routes(
+        app,
+        CONFIG,
+        psu,
+        emc2301,
+        ds_sensor,
+        ds_rom,
+        FAN_TEMPS,
+        FAN_SPEEDS,
+        VERSION,
+        MAC_ADDR,
+        BOARD_REV,
+        ifconfig,
+    )
+    setup_api_routes(
+        app,
+        CONFIG,
+        psu,
+        emc2301,
+        ds_sensor,
+        ds_rom,
+        FAN_TEMPS,
+        FAN_SPEEDS,
+        VERSION,
+        MAC_ADDR,
+        BOARD_REV,
+        ifconfig,
+    )
+
+    Response.default_content_type = "text/html"
     app.run(port=80, debug=True)
+
 
 try:
     webserver()

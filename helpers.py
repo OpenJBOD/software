@@ -36,6 +36,29 @@ except OSError:
     STATE = read_state()
 
 
+def read_board_rev(i2c):
+    i2c_address = 80
+    version_register = 0x00
+
+    version_bytes = i2c.readfrom_mem(i2c_address, version_register, 1)
+
+    if version_bytes == b"1":
+        version_str = "Rev 5"
+    elif version_bytes == b"\xff":
+        version_str = "Unknown Board Version"
+
+    return version_str
+
+
+def read_eeprom_mac(i2c):
+    i2c_address = 80
+    mac_register = 0xFA
+
+    mac_list = list(i2c.readfrom_mem(i2c_address, mac_register, 6))
+
+    return mac_list
+
+
 class SRLatch:
     def __init__(
         self,

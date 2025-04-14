@@ -2,9 +2,33 @@ from microdot import Response
 from microdot.auth import BasicAuth
 import helpers
 
-def setup_api_routes(app, CONFIG, emc2301, ds_sensor, ds_rom):
-    auth = BasicAuth()
+
+def setup_api_routes(
+    app,
+    CONFIG,
+    psu,
+    emc2301,
+    ds_sensor,
+    ds_rom,
+    FAN_TEMPS,
+    FAN_SPEEDS,
+    VERSION,
+    MAC_ADDR,
+    BOARD_REV,
+    ifconfig,
+):
     Response.default_content_type = "application/json"
+    auth = BasicAuth()
+
+    @auth.authenticate
+    async def check_credentials(request, username, password):
+        for user in CONFIG["web"]["users"]:
+            if username in CONFIG["web"]["users"][user]["username"]:
+                if (
+                    helpers.create_hash(password)
+                    == CONFIG["web"]["users"][user]["password"]
+                ):
+                    return user
 
     @app.route("/api/temperatures")
     @auth
@@ -18,7 +42,9 @@ def setup_api_routes(app, CONFIG, emc2301, ds_sensor, ds_rom):
     @auth
     async def api_set_fan_ctrl(req):
         if req.method == "POST":
-            if "use_ext_fan_ctrl" in req.json and isinstance(req.json["use_ext_fan_ctrl"], (int, float)):
+            if "use_ext_fan_ctrl" in req.json and isinstance(
+                req.json["use_ext_fan_ctrl"], (int, float)
+            ):
                 CONFIG["monitoring"]["use_ext_fan_ctrl"] = req.json["use_ext_fan_ctrl"]
             return {"status": "success"}
         return {"use_ext_fan_ctrl": CONFIG["monitoring"]["use_ext_fan_ctrl"]}
@@ -46,7 +72,7 @@ def setup_api_routes(app, CONFIG, emc2301, ds_sensor, ds_rom):
             psu.on()
         except Exception as e:
             return {"status": "error", "message": str(e)}
-        
+
         return {"status": "success"}
 
     @app.route("/api/power/off")
@@ -56,7 +82,7 @@ def setup_api_routes(app, CONFIG, emc2301, ds_sensor, ds_rom):
             psu.off()
         except Exception as e:
             return {"status": "error", "message": str(e)}
-        
+
         return {"status": "success"}
 
     @app.route("/api/reset/rp2040")
@@ -92,7 +118,10 @@ def setup_api_routes(app, CONFIG, emc2301, ds_sensor, ds_rom):
             CONFIG["network"]["gateway"] = req.json["gateway_ip"]
             CONFIG["network"]["dns"] = req.json["dns_ip"]
             helpers.write_config(CONFIG)
-            return {"status": "success"}
+            return {
+                "status": "success",
+                "message": "Network settings updated. Reboot required.",
+            }
         return CONFIG["network"]
 
     @app.route("/api/settings/power", methods=["GET", "POST"])
@@ -103,9 +132,14 @@ def setup_api_routes(app, CONFIG, emc2301, ds_sensor, ds_rom):
             CONFIG["power"]["on_boot_delay"] = int(req.json["on_boot_delay"])
             CONFIG["power"]["follow_usb"] = bool(req.json.get("follow_usb"))
             CONFIG["power"]["follow_usb_delay"] = int(req.json["follow_usb_delay"])
-            CONFIG["power"]["ignore_power_switch"] = bool(req.json.get("ignore_power_switch"))
+            CONFIG["power"]["ignore_power_switch"] = bool(
+                req.json.get("ignore_power_switch")
+            )
             helpers.write_config(CONFIG)
-            return {"status": "success"}
+            return {
+                "status": "success",
+                "message": "Power settings updated. Reboot required.",
+            }
         return CONFIG["power"]
 
     @app.route("/api/settings/environment", methods=["GET", "POST"])
@@ -114,8 +148,12 @@ def setup_api_routes(app, CONFIG, emc2301, ds_sensor, ds_rom):
         if req.method == "POST":
             old_ds18x20 = CONFIG["monitoring"]["use_ext_probe"]
             CONFIG["monitoring"]["use_ext_probe"] = bool(req.json.get("use_ext_probe"))
-            CONFIG["monitoring"]["use_ext_fan_ctrl"] = bool(req.json.get("use_ext_fan_ctrl"))
-            CONFIG["monitoring"]["ignore_fan_fail"] = bool(req.json.get("ignore_fan_fail"))
+            CONFIG["monitoring"]["use_ext_fan_ctrl"] = bool(
+                req.json.get("use_ext_fan_ctrl")
+            )
+            CONFIG["monitoring"]["ignore_fan_fail"] = bool(
+                req.json.get("ignore_fan_fail")
+            )
             for i in range(1, 6):
                 CONFIG["fan_curve"][str(i)]["temp"] = int(req.json[f"curve_{i}_c"])
                 CONFIG["fan_curve"][str(i)]["fan_p"] = int(req.json[f"curve_{i}_p"])
@@ -130,13 +168,22 @@ def setup_api_routes(app, CONFIG, emc2301, ds_sensor, ds_rom):
     async def api_settings_users(req):
         if req.method == "POST":
             for i in range(1, 6):
-                if req.json.get(f"user_{i}_n") != CONFIG["web"]["users"][str(i)]["username"]:
+                if (
+                    req.json.get(f"user_{i}_n")
+                    != CONFIG["web"]["users"][str(i)]["username"]
+                ):
                     CONFIG["web"]["users"][str(i)]["username"] = req.json[f"user_{i}_n"]
                 if req.json.get(f"user_{i}_cp"):
-                    CONFIG["web"]["users"][str(i)]["password"] = helpers.create_hash(req.json[f"user_{i}_p"])
+                    CONFIG["web"]["users"][str(i)]["password"] = helpers.create_hash(
+                        req.json[f"user_{i}_p"]
+                    )
             helpers.write_config(CONFIG)
             return {"status": "success"}
-        return CONFIG["web"]["users"]
+        users = CONFIG["web"]["users"]
+        for i in users:
+            # Even though they're hashed, let's not show them.
+            del users[i]["password"]
+        return users
 
     @app.route("/api/status")
     @auth
@@ -148,8 +195,16 @@ def setup_api_routes(app, CONFIG, emc2301, ds_sensor, ds_rom):
             "fan_rpm": emc2301.get_fan_speed(edges=3, poles=1),
             "net_info": helpers.get_network_info(ifconfig),
             "mac_addr": MAC_ADDR,
+            "board_rev": BOARD_REV,
             "fan_speed_p": helpers.duty_to_percent(emc2301.get_pwm_duty_cycle()),
             "version": VERSION,
-            "temp": round(helpers.get_ds18x20_temp(ds_sensor, ds_rom) if CONFIG["monitoring"]["use_ds18x20"] else helpers.get_rp2040_temp(), 2)
+            "temp": round(
+                (
+                    helpers.get_ds18x20_temp(ds_sensor, ds_rom)
+                    if CONFIG["monitoring"]["use_ds18x20"]
+                    else helpers.get_rp2040_temp()
+                ),
+                2,
+            ),
         }
         return response

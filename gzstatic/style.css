@@ -190,7 +190,7 @@ textarea {
 
 @media (max-width: 768px) {
   .menu {
-      width: 200px;
+      width: 100%;
   }
   .content {
       margin-left: 10px; /* Adjusted for smaller screens */

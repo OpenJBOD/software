@@ -3,7 +3,21 @@ from microdot.utemplate import Template
 from microdot.auth import BasicAuth
 import helpers  # Add this import
 
-def setup_routes(app, CONFIG, psu, emc2301, ds_sensor, ds_rom, FAN_TEMPS, FAN_SPEEDS, VERSION, MAC_ADDR, ifconfig):
+
+def setup_routes(
+    app,
+    CONFIG,
+    psu,
+    emc2301,
+    ds_sensor,
+    ds_rom,
+    FAN_TEMPS,
+    FAN_SPEEDS,
+    VERSION,
+    MAC_ADDR,
+    BOARD_REV,
+    ifconfig,
+):
     auth = BasicAuth()
     Response.default_content_type = "text/html"
 
@@ -11,7 +25,10 @@ def setup_routes(app, CONFIG, psu, emc2301, ds_sensor, ds_rom, FAN_TEMPS, FAN_SP
     async def check_credentials(request, username, password):
         for user in CONFIG["web"]["users"]:
             if username in CONFIG["web"]["users"][user]["username"]:
-                if helpers.create_hash(password) == CONFIG["web"]["users"][user]["password"]:
+                if (
+                    helpers.create_hash(password)
+                    == CONFIG["web"]["users"][user]["password"]
+                ):
                     return user
 
     @app.route("/static/<path:path>")
@@ -71,7 +88,9 @@ def setup_routes(app, CONFIG, psu, emc2301, ds_sensor, ds_rom, FAN_TEMPS, FAN_SP
             CONFIG["power"]["on_boot_delay"] = int(req.form["on_boot_delay"])
             CONFIG["power"]["follow_usb"] = bool(req.form.get("follow_usb"))
             CONFIG["power"]["follow_usb_delay"] = int(req.form["follow_usb_delay"])
-            CONFIG["power"]["ignore_power_switch"] = bool(req.form.get("ignore_power_switch"))
+            CONFIG["power"]["ignore_power_switch"] = bool(
+                req.form.get("ignore_power_switch")
+            )
             helpers.write_config(CONFIG)
             return redirect("/settings/power")
         return Template("settings_power.html").render(config=CONFIG)
@@ -82,8 +101,12 @@ def setup_routes(app, CONFIG, psu, emc2301, ds_sensor, ds_rom, FAN_TEMPS, FAN_SP
         if req.method == "POST":
             old_ds18x20 = CONFIG["monitoring"]["use_ext_probe"]
             CONFIG["monitoring"]["use_ext_probe"] = bool(req.form.get("use_ext_probe"))
-            CONFIG["monitoring"]["use_ext_fan_ctrl"] = bool(req.form.get("use_ext_fan_ctrl"))
-            CONFIG["monitoring"]["ignore_fan_fail"] = bool(req.form.get("ignore_fan_fail"))
+            CONFIG["monitoring"]["use_ext_fan_ctrl"] = bool(
+                req.form.get("use_ext_fan_ctrl")
+            )
+            CONFIG["monitoring"]["ignore_fan_fail"] = bool(
+                req.form.get("ignore_fan_fail")
+            )
             for i in range(1, 6):
                 CONFIG["fan_curve"][str(i)]["temp"] = int(req.form[f"curve_{i}_c"])
                 CONFIG["fan_curve"][str(i)]["fan_p"] = int(req.form[f"curve_{i}_p"])
@@ -98,10 +121,15 @@ def setup_routes(app, CONFIG, psu, emc2301, ds_sensor, ds_rom, FAN_TEMPS, FAN_SP
     async def settings_users(req):
         if req.method == "POST":
             for i in range(1, 6):
-                if req.form.get(f"user_{i}_n") != CONFIG["web"]["users"][str(i)]["username"]:
+                if (
+                    req.form.get(f"user_{i}_n")
+                    != CONFIG["web"]["users"][str(i)]["username"]
+                ):
                     CONFIG["web"]["users"][str(i)]["username"] = req.form[f"user_{i}_n"]
                 if req.form.get(f"user_{i}_cp"):
-                    CONFIG["web"]["users"][str(i)]["password"] = helpers.create_hash(req.form[f"user_{i}_p"])
+                    CONFIG["web"]["users"][str(i)]["password"] = helpers.create_hash(
+                        req.form[f"user_{i}_p"]
+                    )
             helpers.write_config(CONFIG)
             return redirect("/settings/users")
         return Template("settings_users.html").render(config=CONFIG)
@@ -121,10 +149,18 @@ def setup_routes(app, CONFIG, psu, emc2301, ds_sensor, ds_rom, FAN_TEMPS, FAN_SP
             "serial": helpers.get_id(),
             "fan_rpm": emc2301.get_fan_speed(edges=3, poles=1),
             "net_info": helpers.get_network_info(ifconfig),
+            "board_rev": BOARD_REV,
             "mac_addr": MAC_ADDR,
             "fan_speed_p": helpers.duty_to_percent(emc2301.get_pwm_duty_cycle()),
             "version": VERSION,
-            "temp": round(helpers.get_ds18x20_temp(ds_sensor, ds_rom) if CONFIG["monitoring"]["use_ds18x20"] else helpers.get_rp2040_temp(), 2)
+            "temp": round(
+                (
+                    helpers.get_ds18x20_temp(ds_sensor, ds_rom)
+                    if CONFIG["monitoring"]["use_ds18x20"]
+                    else helpers.get_rp2040_temp()
+                ),
+                2,
+            ),
         }
         return Template("index.html").render(resp=response)
 
