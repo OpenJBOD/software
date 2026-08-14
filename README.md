@@ -2,6 +2,11 @@
 
 The OpenJBOD Software is a Python-based software package for managing an OpenJBOD controller.
 
+This software has been retired in favour of [Tank](github.com/OpenJBOD/tank). This repository is preserved for archival reasons, but no future development will take place on this version.
+
+<details>
+<summary>Click here for the original README.</summary>
+
 ## Requirements
 
 - An OpenJBOD RP2040 controller
@@ -55,3 +60,4 @@ This software uses a bunch of cool projects that are making this all possible, t
 - [utemplate](https://github.com/pfalcon/utemplate)
 - [Pure CSS](https://github.com/pure-css/pure/)
 - [Pure CSS Layout Examples](https://purecss.io/layouts/)
+</details>
